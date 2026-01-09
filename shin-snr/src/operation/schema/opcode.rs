@@ -1,7 +1,6 @@
 use std::fmt;
 
 use enum_map::Enum;
-use shin_versions::{StringArrayKind, StringKind};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Enum)]
 #[allow(non_camel_case_types)]
@@ -202,45 +201,6 @@ pub enum Command {
 
     // this is the last thing in the opcode space
     DEBUGOUT,
-}
-
-impl TryFrom<Command> for StringKind {
-    type Error = ();
-
-    fn try_from(value: Command) -> Result<Self, Self::Error> {
-        use Command::*;
-
-        Ok(match value {
-            SAVEINFO => StringKind::Saveinfo,
-            SELECT => StringKind::Select,
-            MSGSET => StringKind::Msgset,
-            DEBUGOUT => StringKind::Dbgout,
-            LOGSET => StringKind::Logset,
-            VOICEPLAY => StringKind::Voiceplay,
-            // Game-specific string kinds
-            CHATSET => StringKind::Chatset,
-            // Alias Carnival
-            NAMED => StringKind::Named,
-            STAGEINFO => StringKind::Stageinfo,
-            // Gohanayome
-            SPINEANM => StringKind::Spineanm,
-            DEBUGTITLE => StringKind::Dbgtitle,
-            _ => return Err(()),
-        })
-    }
-}
-
-impl TryFrom<Command> for StringArrayKind {
-    type Error = ();
-
-    fn try_from(value: Command) -> Result<Self, Self::Error> {
-        use Command::*;
-
-        Ok(match value {
-            SELECT => StringArrayKind::SelectChoice,
-            _ => return Err(()),
-        })
-    }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Enum)]

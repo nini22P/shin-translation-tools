@@ -2,9 +2,9 @@ use std::{num::NonZeroU8, sync::LazyLock};
 
 use drop_bomb::DebugDropBomb;
 use enum_map::EnumMap;
-use shin_versions::{LengthKind, ShinVersion};
+use shin_versions::{LengthKind, ShinVersion, StringStyle};
 
-use crate::operation::schema::{OperationElement, OperationSchemaSlice, opcode::Command};
+use crate::operation::schema::{OperationElement, OperationSchemaSlice};
 
 pub mod command;
 mod instruction;
@@ -130,7 +130,6 @@ impl<'a> InstructionSchemaCtx<'a> {
 
 struct CommandSchemaCtx<'a> {
     version: ShinVersion,
-    command: Command,
     builder: OperationSchemaBuilder<'a, OperationElement>,
 }
 
@@ -184,27 +183,17 @@ impl<'a> CommandSchemaCtx<'a> {
     }
 
     /// A zero-terminated string prefixed with length. The size of length depends on version and string source.
-    pub fn string(&mut self) {
-        let string_kind = match self.command.try_into() {
-            Ok(kind) => kind,
-            Err(_) => panic!(
-                "Could not determine StringKind for command {:?}",
-                self.command
-            ),
-        };
-
-        let size = self.version.string_style(string_kind).size_kind;
-        self.builder.add_element(OperationElement::String(size))
+    pub fn string(&mut self, style: StringStyle) {
+        let StringStyle { size_kind } = style;
+        self.builder
+            .add_element(OperationElement::String(size_kind))
     }
 
     /// A zero-terminated array of zero-terminated strings prefixed with length. The size of length depends on version and string source.
-    pub fn string_array(&mut self) {
-        let size = self
-            .version
-            .string_array_style(self.command.try_into().unwrap())
-            .size_kind;
+    pub fn string_array(&mut self, style: StringStyle) {
+        let StringStyle { size_kind } = style;
         self.builder
-            .add_element(OperationElement::StringArray(size))
+            .add_element(OperationElement::StringArray(size_kind))
     }
 
     pub fn custom(&mut self, element: OperationElement) {
@@ -236,7 +225,6 @@ fn get_schema_for_version(version: ShinVersion) -> super::EngineSchema {
     let commands = EnumMap::from_fn(|command| {
         let mut ctx = CommandSchemaCtx {
             version,
-            command,
             builder: builder.start(),
         };
         match command::get_schema_for_command(&mut ctx, command) {
@@ -270,7 +258,7 @@ mod tests {
     use shin_versions::ShinVersion;
 
     use crate::operation::schema::{
-        EngineSchema, OperationElement, OperationSchema,
+        EngineSchema, OperationSchema,
         opcode::{Command, Instruction, Opcode},
     };
 

@@ -1,4 +1,4 @@
-use shin_versions::{LengthKind, ShinVersion, verpat};
+use shin_versions::{LengthKind, ShinVersion, StringArrayKind, StringKind, verpat};
 
 use crate::operation::schema::{
     OperationElement,
@@ -116,7 +116,7 @@ pub(super) fn get_schema_for_command(
                 }
             }
 
-            ctx.string();
+            ctx.string(ctx.version().string_style(StringKind::Msgset));
         }
         MSGWAIT => {
             ctx.number();
@@ -161,16 +161,18 @@ pub(super) fn get_schema_for_command(
             }
         },
         LOGSET => match ctx.version() {
-            HigurashiSui | WhiteEternity | HigurashiHou | HigurashiHouV2 => ctx.string(),
+            HigurashiSui | WhiteEternity | HigurashiHou | HigurashiHouV2 => {
+                ctx.string(ctx.version().string_style(StringKind::Logset))
+            }
             WorldRe => {
                 ctx.number();
                 ctx.number();
                 ctx.number();
-                ctx.string();
+                ctx.string(ctx.version().string_style(StringKind::Logset));
             }
             AliasCarnival => {
                 ctx.number();
-                ctx.string();
+                ctx.string(ctx.version().string_style(StringKind::Logset));
             }
             DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
                 return OperationResult::Unreachable;
@@ -181,8 +183,11 @@ pub(super) fn get_schema_for_command(
             ctx.u16();
             ctx.reg();
             ctx.number();
-            ctx.string();
-            ctx.string_array();
+            ctx.string(ctx.version().string_style(StringKind::Select));
+            ctx.string_array(
+                ctx.version()
+                    .string_array_style(StringArrayKind::SelectChoice),
+            );
         }
         WIPE => match ctx.version() {
             HigurashiSui | WorldRe => {
@@ -297,7 +302,7 @@ pub(super) fn get_schema_for_command(
             ctx.number();
         }
         VOICEPLAY => {
-            ctx.string();
+            ctx.string(ctx.version().string_style(StringKind::Voiceplay));
             ctx.number();
             ctx.number();
         }
@@ -318,7 +323,7 @@ pub(super) fn get_schema_for_command(
         SAVEINFO => {
             guard!(not verpat!(@dungeon-crawler));
             ctx.number();
-            ctx.string();
+            ctx.string(ctx.version().string_style(StringKind::Saveinfo));
         }
         MOVIE => {
             guard!(verpat!(@pre-shin));
@@ -476,8 +481,8 @@ pub(super) fn get_schema_for_command(
         }
         STAGEINFO => {
             guard!(AliasCarnival);
-            ctx.string();
-            ctx.string();
+            ctx.string(ctx.version().string_style(StringKind::Stageinfo));
+            ctx.string(ctx.version().string_style(StringKind::Stageinfo));
         }
         ICOCHK => {
             guard!(AliasCarnival);
@@ -491,7 +496,7 @@ pub(super) fn get_schema_for_command(
         NAMED => {
             guard!(AliasCarnival);
             ctx.u8();
-            ctx.string();
+            ctx.string(ctx.version().string_style(StringKind::Named));
         }
         BACKINIT => {
             guard!(AliasCarnival);
@@ -568,7 +573,7 @@ pub(super) fn get_schema_for_command(
         // DC4
         CHATSET => {
             guard!(DC4);
-            ctx.string()
+            ctx.string(ctx.version().string_style(StringKind::Chatset))
         }
 
         // Dungeon crawler-specific commands
@@ -702,7 +707,7 @@ pub(super) fn get_schema_for_command(
         SPINEANM => {
             guard!(Gohanayome);
             ctx.number();
-            ctx.string();
+            ctx.string(ctx.version().string_style(StringKind::Spineanm));
             ctx.number();
             ctx.number();
         }
@@ -728,7 +733,7 @@ pub(super) fn get_schema_for_command(
 
         DEBUGTITLE => {
             guard!(Gohanayome);
-            ctx.string();
+            ctx.string(ctx.version().string_style(StringKind::Dbgtitle));
             // FIXME: this array should be bound to size of 9
             ctx.number_array(LengthKind::U8Length);
         }
@@ -736,12 +741,12 @@ pub(super) fn get_schema_for_command(
         DEBUGOUT => match ctx.version() {
             HigurashiSui | WorldRe => return OperationResult::Unreachable,
             AliasCarnival => {
-                ctx.string();
+                ctx.string(ctx.version().string_style(StringKind::Dbgout));
                 ctx.u16();
             }
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
             | Gerokasu2 | Gohanayome => {
-                ctx.string();
+                ctx.string(ctx.version().string_style(StringKind::Dbgout));
                 // FIXME: this array should be bound to size of 9
                 ctx.number_array(LengthKind::U8Length);
             }
