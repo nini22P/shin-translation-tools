@@ -275,6 +275,7 @@ impl<'bump, 'font, 's> LightLayouter<'bump, 'font, 's> {
                 self.push_char(c);
                 PushResult::Nothing
             }
+            MessageToken::UnpairedEscape => PushResult::Nothing,
         }
     }
 

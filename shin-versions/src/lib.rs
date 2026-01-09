@@ -433,19 +433,6 @@ impl ShinVersion {
             verpat!(@dungeon-crawler) => return None,
         })
     }
-
-    pub fn has_needless_escapes(&self) -> bool {
-        use ShinVersion::*;
-        match self {
-            // Here's the string with useless escapes:
-            // `r　両目を見開き、こんな感じの顔をした→!(!？Д!？!)`
-            // `？` is not an ascii-character (it's a full-width question mark)
-            // this causes issues with some of our asserts
-            WorldRe => true,
-            HigurashiSui | AliasCarnival | WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4
-            | Konosuba | Umineko | Gerokasu2 | Gohanayome => false,
-        }
-    }
 }
 
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]

@@ -46,6 +46,7 @@ impl<'b> CommandToken<'b> {
 pub enum MessageToken<'b> {
     Literal(char),
     Command(CommandToken<'b>),
+    UnpairedEscape,
 }
 
 pub struct SpannedMessageToken<'b> {
@@ -262,6 +263,10 @@ pub fn serialize<S>(
                     finished_first_line = true;
                 }
             }
+            MessageToken::UnpairedEscape => match style {
+                MessageCommandStyle::Escaped => sink.push('@', false),
+                MessageCommandStyle::Unescaped => sink.push('!', false),
+            },
         }
     }
 }
@@ -363,23 +368,30 @@ pub fn parse<'bump, S: TokenSink<'bump>>(
         match style {
             MessageCommandStyle::Escaped => {
                 if c == '@' {
-                    let Some((_, c)) = parse.next() else {
-                        todo!("handle unmatched @");
+                    let Some((_, command_char)) = parse.next() else {
+                        sink.push(start, parse.position(), MessageToken::UnpairedEscape);
+                        continue;
                     };
 
-                    if c == '@' {
+                    if command_char == '@' {
                         sink.push(start, parse.position(), MessageToken::Literal('@'));
-                    } else {
-                        let has_argument = MessageCommand::parse(c).is_some_and(|c| c.has_arg());
+                    } else if command_char.is_ascii() {
+                        let has_argument =
+                            MessageCommand::parse(command_char).is_some_and(|cmd| cmd.has_arg());
                         let argument = has_argument.then(|| parse.read_argument()).flatten();
                         sink.push(
                             start,
                             parse.position(),
                             MessageToken::Command(CommandToken {
-                                command: c,
+                                command: command_char,
                                 argument,
                             }),
                         );
+                    } else {
+                        // Treat `@` on a non-ascii char as unpaired.
+                        // `!`-escapes have roughly the same logic. This hack allows roundtripping unnecessary `!`-escapes and unpaired `@`, even when changing command style
+                        sink.push(start, parse.position(), MessageToken::UnpairedEscape);
+                        sink.push(start, parse.position(), MessageToken::Literal(command_char));
                     }
                 } else {
                     sink.push(start, parse.position(), MessageToken::Literal(c));
@@ -388,12 +400,19 @@ pub fn parse<'bump, S: TokenSink<'bump>>(
             MessageCommandStyle::Unescaped => {
                 if (c as u16) < 128 {
                     if c == '!' {
-                        // the game doesn't check end-of-line here too,
-                        // so this is almost 100% invalid string that we will never encounter in the wild
-                        // and it's fine to just unwrap
-                        // maybe it's actually not ideal since our end users can supply such strings...
-                        let (_, c) = parse.next().unwrap();
-                        sink.push(start, parse.position(), MessageToken::Literal(c));
+                        // the game will perform an out-of-bounds read in this case
+                        // we try to handle it a bit more gracefully though
+                        let Some((_, escaped_char)) = parse.next() else {
+                            sink.push(start, parse.position(), MessageToken::UnpairedEscape);
+                            continue;
+                        };
+                        if escaped_char.is_ascii() {
+                            sink.push(start, parse.position(), MessageToken::Literal(escaped_char));
+                        } else {
+                            // explicitly preserve the unnecessary escape to allow round-trip tests to pass
+                            sink.push(start, parse.position(), MessageToken::UnpairedEscape);
+                            sink.push(start, parse.position(), MessageToken::Literal(escaped_char));
+                        }
                     } else {
                         // NOTE: we handle invalid commands the same way the engine would: by ignoring them
                         // the only difference is that we can recognize more commands than the engine for older version of the engine
@@ -471,7 +490,6 @@ pub fn transform_reflow_and_infer_fixup_policy<'bump>(
     in_style: MessageCommandStyle,
     reflow: MessageReflowMode,
     out_style: MessageCommandStyle,
-    has_useless_escapes: bool,
     message_policy: SjisMessageFixupPolicy,
     detected: FixupDetectResult,
     source: AnyStringSource,
@@ -509,10 +527,8 @@ pub fn transform_reflow_and_infer_fixup_policy<'bump>(
         if in_style == out_style
             && let MessageReflowMode::NoReflow = reflow
         {
-            if !has_useless_escapes {
-                // just a sanity check
-                assert_eq!(serialized_string, decoded);
-            }
+            // just a sanity check
+            assert_eq!(serialized_string, decoded);
         }
 
         (serialized_string, fixup_policy)
@@ -531,7 +547,6 @@ pub fn transform_reflow<'bump>(
     in_style: MessageCommandStyle,
     reflow: MessageReflowMode,
     out_style: MessageCommandStyle,
-    has_useless_escapes: bool,
     source: AnyStringSource,
 ) -> &'bump str {
     if source.contains_commands() {
@@ -548,13 +563,12 @@ pub fn transform_reflow<'bump>(
 
         let serialized_string = serialize_string(bump, out_style, &tokens);
 
-        if in_style == out_style {
-            // WorldRe has a string with needless escapes, triggering this assert
-            // This is the problematic string: `r　両目を見開き、こんな感じの顔をした→!(!？Д!？!)`
-            if !has_useless_escapes {
-                // just a sanity check
-                assert_eq!(serialized_string, decoded);
-            }
+        if in_style == out_style
+            && let MessageReflowMode::NoReflow = reflow
+        {
+            // just a sanity check
+            assert_eq!(serialized_string, decoded);
+
             return decoded;
         }
         serialized_string

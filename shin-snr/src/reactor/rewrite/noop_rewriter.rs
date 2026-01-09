@@ -36,7 +36,6 @@ impl StringRewriter for NoopRewriter {
             self.snr_style,
             MessageReflowMode::NoReflow,
             self.user_style,
-            false,
             source,
         );
 

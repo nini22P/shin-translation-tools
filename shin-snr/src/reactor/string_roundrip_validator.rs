@@ -164,7 +164,6 @@ impl StringRoundtripValidatorReactor {
             self.snr_style,
             MessageReflowMode::NoReflow,
             self.user_style,
-            false,
             source,
         );
 
@@ -181,7 +180,6 @@ impl StringRoundtripValidatorReactor {
                         self.user_style,
                         MessageReflowMode::NoReflow,
                         self.snr_style,
-                        false,
                         policy,
                         FixupDetectResult::merge_all(&fixup_map),
                         source,
@@ -203,7 +201,6 @@ impl StringRoundtripValidatorReactor {
                     self.user_style,
                     MessageReflowMode::NoReflow,
                     self.snr_style,
-                    false,
                     source,
                 );
 
