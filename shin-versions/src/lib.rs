@@ -40,7 +40,7 @@ pub enum ShinVersion {
     Umineko,
     /// 2025-03-14 Switch `0100451020714000`
     Gerokasu2,
-    /// 2025-18-09 Switch `01006DA020604000`
+    /// 2025-09-18 Switch `01006DA020604000`
     Gohanayome,
 }
 
@@ -144,6 +144,16 @@ pub enum StringArrayKind {
 pub struct StringStyle {
     pub size_kind: LengthKind,
 }
+
+impl StringStyle {
+    pub const U8: Self = StringStyle {
+        size_kind: LengthKind::U8Length,
+    };
+    pub const U16: Self = StringStyle {
+        size_kind: LengthKind::U16Length,
+    };
+}
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum LengthKind {
     U8Length,
@@ -218,143 +228,6 @@ impl ShinVersion {
             HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | DC4 | Konosuba | Umineko
             | Gerokasu2 | Gohanayome => LengthKind::U16Length,
         }
-    }
-
-    pub fn string_style(&self, kind: StringKind) -> StringStyle {
-        use LengthKind::*;
-        use ShinVersion::*;
-        use StringKind::*;
-
-        let size_kind = match self {
-            HigurashiSui => match kind {
-                Saveinfo | Select | Voiceplay => U8Length,
-                Msgset | Logset => U16Length,
-                Dbgout | Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            AliasCarnival => match kind {
-                Saveinfo | Select | Dbgout | Voiceplay | Stageinfo | Named => U8Length,
-                Msgset | Logset => U16Length,
-                Chatset | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            WorldRe => match kind {
-                Saveinfo | Select | Voiceplay => U8Length,
-                Msgset | Logset => U16Length,
-                Dbgout | Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            WhiteEternity => match kind {
-                Saveinfo | Select | Dbgout | Voiceplay => U8Length,
-                Msgset | Logset => U16Length,
-                Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            HigurashiHou => match kind {
-                Saveinfo | Select | Dbgout | Voiceplay => U8Length,
-                Msgset | Logset => U16Length,
-                Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            HigurashiHouV2 => match kind {
-                Saveinfo | Select | Dbgout | Voiceplay => U8Length,
-                Msgset | Logset => U16Length,
-                Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            DC4 => match kind {
-                Saveinfo | Select | Dbgout | Voiceplay | Msgset | Chatset => U16Length,
-                Logset | Named | Stageinfo | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            Konosuba => match kind {
-                Select | Dbgout | Voiceplay => U8Length,
-                Msgset => U16Length,
-                Saveinfo | Chatset | Logset | Named | Stageinfo | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            Umineko => match kind {
-                Msgset | Select | Voiceplay | Saveinfo | Dbgout => U16Length,
-                Logset | Named | Stageinfo | Chatset | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            Gerokasu2 => match kind {
-                Msgset | Select | Voiceplay | Saveinfo | Dbgout => U16Length,
-                Logset | Named | Stageinfo | Chatset | Spineanm | Dbgtitle => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-            Gohanayome => match kind {
-                Select | Voiceplay | Dbgtitle | Spineanm | Dbgout => U8Length,
-                Msgset => U16Length,
-                Saveinfo | Chatset | Logset | Named | Stageinfo => {
-                    // not in this game
-                    unreachable!()
-                }
-            },
-        };
-
-        StringStyle { size_kind }
-    }
-
-    pub fn string_array_style(&self, kind: StringArrayKind) -> StringStyle {
-        use LengthKind::*;
-        use ShinVersion::*;
-        use StringArrayKind::*;
-
-        let size_kind = match self {
-            HigurashiSui => match kind {
-                SelectChoice => U8Length,
-            },
-            AliasCarnival => match kind {
-                SelectChoice => U8Length,
-            },
-            WorldRe => match kind {
-                SelectChoice => U8Length,
-            },
-            WhiteEternity => match kind {
-                SelectChoice => U8Length,
-            },
-            HigurashiHou | HigurashiHouV2 => match kind {
-                SelectChoice => U8Length,
-            },
-            DC4 => match kind {
-                SelectChoice => U16Length,
-            },
-            Konosuba => match kind {
-                SelectChoice => U8Length,
-            },
-            Umineko => match kind {
-                SelectChoice => U16Length,
-            },
-            Gerokasu2 => match kind {
-                SelectChoice => U16Length,
-            },
-            Gohanayome => match kind {
-                SelectChoice => U8Length,
-            },
-        };
-
-        StringStyle { size_kind }
     }
 
     pub fn string_policy(&self) -> StringPolicy {
