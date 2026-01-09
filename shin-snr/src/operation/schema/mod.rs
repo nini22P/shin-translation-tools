@@ -44,8 +44,10 @@ pub enum OperationElement {
     NumberArray(LengthKind),
     /// A padded array of numbers prefixed by array length. Each number is either 2 or 4 bytes, depending on `NumberStyle`
     PadNumberArray(LengthKind),
-    /// A byte mask and then a number for each bit set. Used for a lot of initialization commands
-    BitmaskNumberArray,
+    /// A u8 bit mask and then a number for each bit set. Used for a lot of initialization commands
+    BitmaskU8NumberArray,
+    /// A u16 bit mask and then a number for each bit set. Used in places where `BitmaskU8NumberArray` is not enough
+    BitmaskU16NumberArray,
 
     /// A zero-terminated string prefixed with length. The size of length depends on version and string source.
     String(LengthKind),
@@ -54,6 +56,7 @@ pub enum OperationElement {
 
     // special kids used only for single commands
     HiguSuiWipeArg,
+    GohanayomeVsetArg,
 }
 
 pub struct EngineSchema {

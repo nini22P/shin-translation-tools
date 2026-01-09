@@ -4,7 +4,7 @@ use crate::{
     operation::{
         OperationElementRepr,
         arena::{Number, Offset, Register},
-        repr::NumberArrayKind,
+        repr::{GohanayomeVsetArg, NumberArrayKind},
     },
     writer::Writer,
 };
@@ -103,8 +103,15 @@ impl<W: Writer> InstructionSerializeContext<W> {
         }
     }
 
-    pub fn put_bitmask_number_array(&mut self, mask: u8, numbers: &[Number]) {
+    pub fn put_u8_bitmask_number_array(&mut self, mask: u8, numbers: &[Number]) {
         self.writer.put_u8(mask);
+        for &number in numbers {
+            self.put_number(number);
+        }
+    }
+
+    pub fn put_u16_bitmask_number_array(&mut self, mask: u16, numbers: &[Number]) {
+        self.writer.put_u16(mask);
         for &number in numbers {
             self.put_number(number);
         }
@@ -116,6 +123,26 @@ impl<W: Writer> InstructionSerializeContext<W> {
 
         for &number in numbers {
             self.put_number(number);
+        }
+    }
+
+    pub fn put_gohanayome_vset_arg(&mut self, arg: GohanayomeVsetArg) {
+        match arg {
+            GohanayomeVsetArg::Type0(num0, num1) => {
+                self.put_number(num0);
+                self.put_u8(0);
+                self.put_number(num1);
+            }
+            GohanayomeVsetArg::Type1(num0, str) => {
+                self.put_number(num0);
+                self.put_u8(1);
+                self.put_string(LengthKind::U8Length, str);
+            }
+            GohanayomeVsetArg::Type2(num0, str) => {
+                self.put_number(num0);
+                self.put_u8(2);
+                self.put_string(LengthKind::U8Length, str);
+            }
         }
     }
 
@@ -158,14 +185,18 @@ impl<W: Writer> InstructionSerializeContext<W> {
                     }
                 }
             }
-            OperationElementRepr::BitmaskNumberArray(mask, numbers) => {
-                self.put_bitmask_number_array(mask, numbers)
+            OperationElementRepr::BitmaskU8NumberArray(mask, numbers) => {
+                self.put_u8_bitmask_number_array(mask, numbers)
+            }
+            OperationElementRepr::BitmaskU16NumberArray(mask, numbers) => {
+                self.put_u16_bitmask_number_array(mask, numbers)
             }
             OperationElementRepr::String(kind, value) => self.put_string(kind, value),
             OperationElementRepr::StringArray(kind, value) => self.put_string_array(kind, value),
             OperationElementRepr::HiguSuiWipeArg(b1, b2, numbers) => {
                 self.put_higu_sui_wipe_arg(b1, b2, numbers)
             }
+            OperationElementRepr::GohanayomeVsetArg(arg) => self.put_gohanayome_vset_arg(arg),
         }
     }
 }

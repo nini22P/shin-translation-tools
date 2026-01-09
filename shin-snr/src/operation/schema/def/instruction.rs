@@ -65,11 +65,11 @@ pub(super) fn get_schema_for_instruction(
         Instruction::retsub => {}
         Instruction::jt => {
             ctx.number();
-            ctx.offset_array(ctx.version().gt_gosubt_length());
+            ctx.offset_array(ctx.version().jt_gosubt_length());
         }
         Instruction::gosubt => {
             ctx.number();
-            ctx.offset_array(ctx.version().gt_gosubt_length());
+            ctx.offset_array(ctx.version().jt_gosubt_length());
         }
         Instruction::rnd => {
             ctx.reg();
@@ -92,6 +92,7 @@ pub(super) fn get_schema_for_instruction(
                     | Konosuba
                     | Umineko
                     | Gerokasu2
+                    | Gohanayome
             );
             ctx.offset();
             ctx.number_array(LengthKind::U8Length);
@@ -106,6 +107,7 @@ pub(super) fn get_schema_for_instruction(
                     | Konosuba
                     | Umineko
                     | Gerokasu2
+                    | Gohanayome
             );
         }
         Instruction::fmt | Instruction::fnmt => {

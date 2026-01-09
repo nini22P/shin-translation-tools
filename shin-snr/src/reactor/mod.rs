@@ -107,6 +107,9 @@ pub enum StringSource {
     // Alias Carnival
     Named,
     Stageinfo,
+    // Gohanayome
+    Spineanm,
+    Dbgtitle,
 }
 
 impl StringSource {
@@ -138,6 +141,8 @@ impl StringSource {
                 Command::CHATSET => Some(StringSource::Chatset),
                 Command::NAMED => Some(StringSource::Named),
                 Command::STAGEINFO => Some(StringSource::Stageinfo),
+                Command::SPINEANM => Some(StringSource::Spineanm),
+                Command::DEBUGTITLE => Some(StringSource::Dbgtitle),
 
                 _ => None,
             },
@@ -155,6 +160,8 @@ impl StringSource {
             StringKind::Chatset => StringSource::Chatset,
             StringKind::Named => StringSource::Named,
             StringKind::Stageinfo => StringSource::Stageinfo,
+            StringKind::Spineanm => StringSource::Spineanm,
+            StringKind::Dbgtitle => StringSource::Dbgtitle,
         }
     }
 
@@ -169,6 +176,8 @@ impl StringSource {
             StringSource::Chatset => StringKind::Chatset,
             StringSource::Named => StringKind::Named,
             StringSource::Stageinfo => StringKind::Stageinfo,
+            StringSource::Spineanm => StringKind::Spineanm,
+            StringSource::Dbgtitle => StringKind::Dbgtitle,
         }
     }
 
@@ -183,6 +192,8 @@ impl StringSource {
             StringSource::Chatset => 0,
             StringSource::Named => 0,
             StringSource::Stageinfo => 0,
+            StringSource::Spineanm => 0,
+            StringSource::Dbgtitle => 0,
         }
     }
 

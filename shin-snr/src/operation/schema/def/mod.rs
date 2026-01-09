@@ -172,17 +172,28 @@ impl<'a> CommandSchemaCtx<'a> {
     }
 
     /// A byte mask and then a number for each bit set. Used for a lot of initialization commands
-    pub fn bitmask_number_array(&mut self) {
+    pub fn bitmask_u8_number_array(&mut self) {
         self.builder
-            .add_element(OperationElement::BitmaskNumberArray)
+            .add_element(OperationElement::BitmaskU8NumberArray)
+    }
+
+    /// A u16 bit mask and then a number for each bit set. Used in places where [`Self::bitmask_u8_number_array`] is not enough.
+    pub fn bitmask_u16_number_array(&mut self) {
+        self.builder
+            .add_element(OperationElement::BitmaskU16NumberArray)
     }
 
     /// A zero-terminated string prefixed with length. The size of length depends on version and string source.
     pub fn string(&mut self) {
-        let size = self
-            .version
-            .string_style(self.command.try_into().unwrap())
-            .size_kind;
+        let string_kind = match self.command.try_into() {
+            Ok(kind) => kind,
+            Err(_) => panic!(
+                "Could not determine StringKind for command {:?}",
+                self.command
+            ),
+        };
+
+        let size = self.version.string_style(string_kind).size_kind;
         self.builder.add_element(OperationElement::String(size))
     }
 

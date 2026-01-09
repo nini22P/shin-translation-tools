@@ -3,12 +3,22 @@ use std::{cell::Cell, fmt};
 use hex_slice::AsHex;
 use shin_versions::LengthKind;
 
-use crate::operation::arena::{Number, Offset, Register};
+use crate::operation::{
+    arena::{Number, Offset, Register},
+    repr,
+};
 
 #[derive(Debug, Copy, Clone)]
 pub enum NumberArrayKind {
     Dense,
     Padded,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum GohanayomeVsetArg<'snr> {
+    Type0(Number, Number),
+    Type1(Number, &'snr [u8]),
+    Type2(Number, &'snr [u8]),
 }
 
 pub enum OperationElementRepr<'a, 'snr> {
@@ -29,13 +39,15 @@ pub enum OperationElementRepr<'a, 'snr> {
     Number(Number),
     OptionalNumber(Option<Number>),
     NumberArray(LengthKind, NumberArrayKind, &'a [Number]),
-    BitmaskNumberArray(u8, &'a [Number]),
+    BitmaskU8NumberArray(u8, &'a [Number]),
+    BitmaskU16NumberArray(u16, &'a [Number]),
 
     String(LengthKind, &'snr [u8]),
     StringArray(LengthKind, &'snr [u8]),
 
     // special kids used only for single commands
     HiguSuiWipeArg(u8, u8, &'a [Number]),
+    GohanayomeVsetArg(GohanayomeVsetArg<'snr>),
 }
 
 struct NumberFmt(u32);
@@ -143,10 +155,18 @@ impl fmt::Debug for OperationElementRepr<'_, '_> {
                     SeqFmt::new(numbers.iter().copied().map(NumberFmt))
                 )
             }
-            BitmaskNumberArray(mask, numbers) => {
+            BitmaskU8NumberArray(mask, numbers) => {
                 write!(
                     f,
-                    "bm{{{:#01X}/[{:?}]}}",
+                    "bmu8{{{:#01X}/[{:?}]}}",
+                    mask,
+                    SeqFmt::new(numbers.iter().copied().map(NumberFmt))
+                )
+            }
+            BitmaskU16NumberArray(mask, numbers) => {
+                write!(
+                    f,
+                    "bmu16{{{:#01X}/[{:?}]}}",
                     mask,
                     SeqFmt::new(numbers.iter().copied().map(NumberFmt))
                 )
@@ -166,6 +186,27 @@ impl fmt::Debug for OperationElementRepr<'_, '_> {
                     SeqFmt::new(numbers.iter().copied().map(NumberFmt))
                 )
             }
+            GohanayomeVsetArg(arg) => match arg {
+                repr::GohanayomeVsetArg::Type0(num0, num1) => {
+                    writeln!(f, "gohanayome_vset0{{num0: {:?}, num1: {:?}}}", num0, num1)
+                }
+                repr::GohanayomeVsetArg::Type1(num0, str) => {
+                    writeln!(
+                        f,
+                        "gohanayome_vset1{{num0: {:?}, str: {:x}}}",
+                        num0,
+                        str.as_hex()
+                    )
+                }
+                repr::GohanayomeVsetArg::Type2(num0, str) => {
+                    writeln!(
+                        f,
+                        "gohanayome_vset2{{num0: {:?}, str: {:x}}}",
+                        num0,
+                        str.as_hex()
+                    )
+                }
+            },
         }
     }
 }

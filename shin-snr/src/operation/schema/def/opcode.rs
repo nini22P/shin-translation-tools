@@ -689,9 +689,11 @@ pub const fn get_opcode_name(version: ShinVersion, opcode: u8) -> Option<Opcode>
                 0xc5 => LAYERBACK,   // 0x710009f450
                 0xc6 => LAYERSELECT, // 0x710009f490
                 0xc7 => MOVIEWAIT,   // 0x710009f4e0
-                0xe0 => SLEEP,       // 0x710009f530
-                0xe1 => VSET,        // 0x710009f5c0
-                0xff => DEBUGOUT,    // 0x710009f610
+
+                0xe0 => SLEEP, // 0x710009f530
+                0xe1 => VSET,  // 0x710009f5c0
+
+                0xff => DEBUGOUT, // 0x710009f610
                 _ => return None,
             })
         }),
@@ -874,6 +876,95 @@ pub const fn get_opcode_name(version: ShinVersion, opcode: u8) -> Option<Opcode>
                 0xcf => MASKUNLOAD,  // 0x71000c1048
                 0xe0 => QUIZ,        // 0x71000c107c
                 0xff => DEBUGOUT,    // 0x71000c10e0
+                _ => return None,
+            })
+        }),
+        ShinVersion::Gohanayome => Some(if opcode != 0 && opcode < 0x80 {
+            // ===
+            // Instructions
+            Opcode::Instruction(match opcode {
+                0x40 => uo,       // 0x71000e94d0
+                0x41 => bo,       // 0x71000e97d4
+                0x42 => exp,      // 0x71000e9b00
+                0x43 => mm,       // 0x71000ea160
+                0x44 => gt,       // 0x71000ea220
+                0x45 => st,       // 0x71000ea2fc
+                0x46 => jc,       // 0x71000ea3ac
+                0x47 => j,        // 0x71000ea53c
+                0x48 => gosub,    // 0x71000ea56c
+                0x49 => retsub,   // 0x71000ea5b8
+                0x4a => jt,       // 0x71000ea5dc
+                0x4b => gosubt,   // 0x71000ea650
+                0x4c => rnd,      // 0x71000ea6c8
+                0x4d => push,     // 0x71000ea790
+                0x4e => pop,      // 0x71000ea800
+                0x4f => call,     // 0x71000ea8d0
+                0x50 => r#return, // 0x71000ea998
+                0x51 => fmt,      // 0x71000ea9e0
+                0x52 => fnmt,     // 0x71000eab30
+                0x53 => getbupid, // 0x71000eac74
+                _ => return None,
+            })
+        } else {
+            // ===
+            // Commands
+            Opcode::Command(match opcode {
+                0x00 => EXIT, // 0x71000e9488
+
+                0x80 => SGET,      // 0x71000ead24
+                0x81 => SSET,      // 0x71000ead88
+                0x82 => WAIT,      // 0x71000eadd4
+                0x83 => MSGINIT,   // 0x71000eae3c
+                0x84 => MSGSET,    // 0x71000eae7c
+                0x85 => MSGWAIT,   // 0x71000eaf28
+                0x86 => MSGSIGNAL, // 0x71000eaf68
+                0x87 => MSGCLOSE,  // 0x71000eaf9c
+                0x88 => MSGCHECK,  // 0x71000eaff8
+                0x89 => SELECT,    // 0x71000eb060
+                0x8a => WIPE,      // 0x71000eb1b8
+                0x8b => WIPEWAIT,  // 0x71000eb310
+
+                0x90 => BGMPLAY,   // 0x71000eb344
+                0x91 => BGMSTOP,   // 0x71000eb3b0
+                0x92 => BGMVOL,    // 0x71000eb3f0
+                0x93 => BGMWAIT,   // 0x71000eb43c
+                0x94 => BGMSYNC,   // 0x71000eb47c
+                0x95 => SEPLAY,    // 0x71000eb4bc
+                0x96 => SESTOP,    // 0x71000eb54c
+                0x97 => SESTOPALL, // 0x71000eb598
+                0x98 => SEVOL,     // 0x71000eb5d8
+                0x99 => SEPAN,     // 0x71000eb638
+                0x9a => SEWAIT,    // 0x71000eb698
+                0x9b => SEONCE,    // 0x71000eb6e4
+                0x9c => VOICEPLAY, // 0x71000eb75c
+                0x9d => VOICESTOP, // 0x71000eb7f4
+                0x9e => VOICEWAIT, // 0x71000eb828
+
+                0xa0 => BGMSAVE,     // 0x71000eb868
+                0xa1 => BGMLOAD,     // 0x71000eb8a8
+                0xc0 => LAYERINIT,   // 0x71000eb8f4
+                0xc1 => LAYERLOAD,   // 0x71000eb934
+                0xc2 => LAYERUNLOAD, // 0x71000ebb6c
+                0xc3 => LAYERCTRL,   // 0x71000ebbb8
+                0xc4 => LAYERWAIT,   // 0x71000ebd10
+                0xc5 => PAGEBACK,    // 0x71000ebda4
+                0xc6 => LAYERSELECT, // 0x71000ebdd8
+                0xc7 => MOVIEWAIT,   // 0x71000ebe24
+                0xc8 => SPINEANM,    // 0x71000ebe70
+                0xc9 => SPINEWAIT,   // 0x71000ebf10
+                0xca => BUPEMOTE,    // 0x71000ebf50
+
+                0xe0 => SLEEP,    // 0x71000ebf9c
+                0xe1 => VSET,     // 0x71000ec02c
+                0xe2 => STATSHOW, // 0x71000ec0fc
+
+                0xe3 => UNLOCK,  // 0x71000ec13c
+                0xe4 => EVBEGIN, // 0x71000ec19c
+                0xe5 => EVEND,   // 0x71000ec1d0
+                0xe6 => VIBRATE, // 0x71000ec204
+
+                0xfe => DEBUGTITLE, // 0x71000ec250
+                0xff => DEBUGOUT,   // 0x71000ec340
                 _ => return None,
             })
         }),

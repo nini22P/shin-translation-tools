@@ -1,4 +1,5 @@
 use crate::operation::{
+    repr,
     repr::{NumberArrayKind, OperationElementRepr},
     schema::{OperationElement, OperationSchema},
 };
@@ -83,10 +84,15 @@ impl OperationArenaPosition {
             OperationElement::PadNumberArray(kind) => {
                 NumberArray(kind, NumberArrayKind::Padded, self.take_numbers(arena))
             }
-            OperationElement::BitmaskNumberArray => {
+            OperationElement::BitmaskU8NumberArray => {
                 let mask = self.take_u8(arena);
                 let numbers = self.take_numbers(arena);
-                BitmaskNumberArray(mask, numbers)
+                BitmaskU8NumberArray(mask, numbers)
+            }
+            OperationElement::BitmaskU16NumberArray => {
+                let mask = self.take_u16(arena);
+                let numbers = self.take_numbers(arena);
+                BitmaskU16NumberArray(mask, numbers)
             }
             OperationElement::String(kind) => String(kind, self.take_string(arena)),
             OperationElement::StringArray(kind) => StringArray(kind, self.take_string_array(arena)),
@@ -95,6 +101,27 @@ impl OperationArenaPosition {
                 let b2 = self.take_u8(arena);
                 let numbers = self.take_numbers(arena);
                 HiguSuiWipeArg(b1, b2, numbers)
+            }
+            OperationElement::GohanayomeVsetArg => {
+                // this is ugly as hell...
+                // do we need dependent types in our schema now?..
+                let number = self.take_number(arena);
+                let ty = self.take_u8(arena);
+                match ty {
+                    0 => GohanayomeVsetArg(repr::GohanayomeVsetArg::Type0(
+                        number,
+                        self.take_number(arena),
+                    )),
+                    1 => GohanayomeVsetArg(repr::GohanayomeVsetArg::Type1(
+                        number,
+                        self.take_string(arena),
+                    )),
+                    2 => GohanayomeVsetArg(repr::GohanayomeVsetArg::Type2(
+                        number,
+                        self.take_string(arena),
+                    )),
+                    _ => unreachable!(),
+                }
             }
         }
     }

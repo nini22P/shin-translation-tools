@@ -187,6 +187,19 @@ pub enum Command {
     KGET,
     KSET,
 
+    // Gohanayome
+    BGMSAVE,
+    BGMLOAD,
+
+    SPINEANM,
+    SPINEWAIT,
+    BUPEMOTE,
+    STATSHOW,
+
+    VIBRATE,
+
+    DEBUGTITLE,
+
     // this is the last thing in the opcode space
     DEBUGOUT,
 }
@@ -209,6 +222,9 @@ impl TryFrom<Command> for StringKind {
             // Alias Carnival
             NAMED => StringKind::Named,
             STAGEINFO => StringKind::Stageinfo,
+            // Gohanayome
+            SPINEANM => StringKind::Spineanm,
+            DEBUGTITLE => StringKind::Dbgtitle,
             _ => return Err(()),
         })
     }

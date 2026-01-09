@@ -1,4 +1,4 @@
-use shin_versions::{LengthKind, ShinVersion};
+use shin_versions::{LengthKind, ShinVersion, verpat};
 
 use crate::operation::schema::{
     OperationElement,
@@ -14,8 +14,13 @@ pub(super) fn get_schema_for_command(
     use ShinVersion::*;
 
     macro_rules! guard {
+        (not $($pattern:tt)*) => {
+            if matches!(ctx.version(), $($pattern)*) {
+                return OperationResult::Unreachable;
+            }
+        };
         ($($pattern:tt)*) => {
-            if !matches!(ctx.version(), shin_versions::verpat!($($pattern)*)) {
+            if !matches!(ctx.version(), $($pattern)*) {
                 return OperationResult::Unreachable;
             }
         };
@@ -30,7 +35,7 @@ pub(super) fn get_schema_for_command(
                 ctx.u8();
                 ctx.number();
             }
-            Konosuba => {
+            Konosuba | Gohanayome => {
                 ctx.number();
             }
         },
@@ -45,7 +50,7 @@ pub(super) fn get_schema_for_command(
         WAIT => match ctx.version() {
             HigurashiSui | AliasCarnival | WorldRe => ctx.number(),
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 => {
+            | Gerokasu2 | Gohanayome => {
                 ctx.u8();
                 ctx.number();
             }
@@ -53,7 +58,7 @@ pub(super) fn get_schema_for_command(
         KEYWAIT => match ctx.version() {
             HigurashiSui | AliasCarnival | WorldRe => ctx.number(),
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 => {
+            | Gerokasu2 | Gohanayome => {
                 return OperationResult::Unreachable;
             }
         },
@@ -62,7 +67,7 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.number();
             }
-            HigurashiHou | DC4 | Konosuba | Umineko | Gerokasu2 => {
+            HigurashiHou | DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
                 ctx.number();
             }
             HigurashiHouV2 => {
@@ -106,6 +111,9 @@ pub(super) fn get_schema_for_command(
                 Gerokasu2 => {
                     ctx.number();
                 }
+                Gohanayome => {
+                    // nothing here
+                }
             }
 
             ctx.string();
@@ -122,12 +130,12 @@ pub(super) fn get_schema_for_command(
         MSGCLOSE => match ctx.version() {
             HigurashiSui | AliasCarnival | WorldRe => {}
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 => {
+            | Gerokasu2 | Gohanayome => {
                 ctx.u8();
             }
         },
         MSGCHECK => {
-            guard!(@pre-shin);
+            guard!(HigurashiSui | AliasCarnival | WorldRe | Gohanayome);
             ctx.u32();
         }
         MSGQUAKE => {
@@ -139,7 +147,7 @@ pub(super) fn get_schema_for_command(
             guard!(HigurashiHouV2);
         }
         MSGFACE => match ctx.version() {
-            HigurashiSui | WorldRe | Konosuba | HigurashiHouV2 | Umineko => {
+            HigurashiSui | WorldRe | Konosuba | HigurashiHouV2 | Umineko | Gohanayome => {
                 return OperationResult::Unreachable;
             }
             AliasCarnival => {
@@ -164,7 +172,9 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.string();
             }
-            DC4 | Konosuba | Umineko | Gerokasu2 => return OperationResult::Unreachable,
+            DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
+                return OperationResult::Unreachable;
+            }
         },
         SELECT => {
             ctx.u16();
@@ -180,11 +190,11 @@ pub(super) fn get_schema_for_command(
                 ctx.custom(OperationElement::HiguSuiWipeArg);
             }
             AliasCarnival | HigurashiHou | HigurashiHouV2 | WhiteEternity | DC4 | Konosuba
-            | Umineko | Gerokasu2 => {
+            | Umineko | Gerokasu2 | Gohanayome => {
                 ctx.number();
                 ctx.number();
                 ctx.number();
-                ctx.bitmask_number_array();
+                ctx.bitmask_u8_number_array();
             }
         },
         WIPEWAIT => {}
@@ -225,7 +235,7 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.number();
             }
-            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 => {
+            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
                 // 7x number
                 ctx.number();
                 ctx.number();
@@ -249,7 +259,7 @@ pub(super) fn get_schema_for_command(
             ctx.number();
         }
         SEPAN => {
-            guard!(@post-shin);
+            guard!(verpat!(@post-shin));
             ctx.number();
             ctx.number();
             ctx.number();
@@ -272,7 +282,7 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.number();
             }
-            DC4 | HigurashiHou | HigurashiHouV2 | Konosuba | Umineko | Gerokasu2 => {
+            DC4 | HigurashiHou | HigurashiHouV2 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
                 // 5x number
                 ctx.number();
                 ctx.number();
@@ -282,7 +292,7 @@ pub(super) fn get_schema_for_command(
             }
         },
         UNK9B => {
-            guard!(@pre-shin);
+            guard!(verpat!(@pre-shin));
             ctx.number();
             ctx.number();
         }
@@ -292,7 +302,9 @@ pub(super) fn get_schema_for_command(
             ctx.number();
         }
         VOICESTOP => {
-            guard!(HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2);
+            guard!(
+                HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome
+            );
         }
         VOICEWAIT => {
             ctx.number();
@@ -304,29 +316,39 @@ pub(super) fn get_schema_for_command(
         }
 
         SAVEINFO => {
-            guard!(@not-konosuba);
+            guard!(not verpat!(@dungeon-crawler));
             ctx.number();
             ctx.string();
         }
         MOVIE => {
-            guard!(@pre-shin);
+            guard!(verpat!(@pre-shin));
             ctx.number();
         }
         AUTOSAVE => {
-            guard!(@not-konosuba);
+            guard!(not verpat!(@dungeon-crawler));
         }
         EVBEGIN => {
-            guard!(@not-konosuba);
-            ctx.number();
+            match ctx.version() {
+                HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | HigurashiHou
+                | HigurashiHouV2 | DC4 | Umineko | Gerokasu2 => {
+                    ctx.number();
+                }
+                Konosuba => {
+                    return OperationResult::Unreachable;
+                }
+                Gohanayome => {
+                    // nothing here
+                }
+            }
         }
         EVEND => {
-            guard!(@not-konosuba);
+            guard!(not Konosuba);
         }
         RESUMESET => {
-            guard!(@post-plane);
+            guard!(verpat!(@post-plane));
         }
         RESUME => {
-            guard!(@post-plane);
+            guard!(verpat!(@post-plane));
         }
         SYSCALL => {
             guard!(Umineko | Gerokasu2);
@@ -334,7 +356,7 @@ pub(super) fn get_schema_for_command(
             ctx.number();
         }
         TROPHY => {
-            guard!(@not-konosuba);
+            guard!(not verpat!(@dungeon-crawler));
             ctx.number();
         }
         UNLOCK => match ctx.version() {
@@ -348,29 +370,40 @@ pub(super) fn get_schema_for_command(
                 ctx.u8();
                 ctx.number_array(LengthKind::U8Length);
             }
+            Gohanayome => {
+                ctx.number();
+                ctx.number();
+                ctx.number();
+            }
         },
         LAYERCLEAR => {
-            guard!(@pre-shin);
+            guard!(verpat!(@pre-shin));
         }
         LAYERINIT => {
-            guard!(@post-shin);
+            guard!(verpat!(@post-shin));
             ctx.number()
         }
         LAYERLOAD => {
             ctx.number();
             ctx.number();
             ctx.number();
-            ctx.bitmask_number_array();
+            match ctx.version() {
+                HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | HigurashiHou
+                | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 => {
+                    ctx.bitmask_u8_number_array()
+                }
+                Gohanayome => ctx.bitmask_u16_number_array(),
+            }
         }
         LAYERUNLOAD => {
-            guard!(@post-shin);
+            guard!(verpat!(@post-shin));
             ctx.number();
             ctx.number();
         }
         LAYERCTRL => {
             ctx.number();
             ctx.number();
-            ctx.bitmask_number_array();
+            ctx.bitmask_u8_number_array();
         }
         LAYERWAIT => match ctx.version() {
             HigurashiSui | WorldRe => {
@@ -378,7 +411,7 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
             }
             AliasCarnival | WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba
-            | Umineko | Gerokasu2 => {
+            | Umineko | Gerokasu2 | Gohanayome => {
                 ctx.number();
                 ctx.number_array(LengthKind::U8Length);
             }
@@ -393,45 +426,47 @@ pub(super) fn get_schema_for_command(
             ctx.number();
         }
         LAYERSELECT => {
-            guard!(@post-shin);
+            guard!(verpat!(@post-shin));
             ctx.number();
             ctx.number();
         }
         MOVIEWAIT => {
-            guard!(@post-shin);
+            guard!(verpat!(@post-shin));
             ctx.number();
             ctx.number();
         }
 
         TRANSSET => {
-            guard!(@post-plane);
+            guard!(verpat!(@post-plane));
             ctx.number();
             ctx.number();
             ctx.number();
-            ctx.bitmask_number_array();
+            ctx.bitmask_u8_number_array();
         }
         TRANSWAIT => {
-            guard!(@post-plane);
+            guard!(verpat!(@post-plane));
             ctx.number();
         }
         PAGEBACK => {
-            guard!(@post-plane);
+            // why does Gohanayame has PAGEBACK without having planes?
+            // idk
+            guard!(verpat!(@post-plane) | Gohanayome);
         }
         PLANESELECT => {
-            guard!(@post-plane);
+            guard!(verpat!(@post-plane));
             ctx.number();
         }
         PLANECLEAR => {
-            guard!(@post-plane);
+            guard!(verpat!(@post-plane));
         }
         MASKLOAD => {
-            guard!(@post-plane);
+            guard!(verpat!(@post-plane));
             ctx.number();
             ctx.number();
             ctx.number();
         }
         MASKUNLOAD => {
-            guard!(@post-plane);
+            guard!(verpat!(@post-plane));
         }
 
         // Alias Carnival
@@ -485,7 +520,7 @@ pub(super) fn get_schema_for_command(
             guard!(WorldRe | WhiteEternity);
             ctx.number();
             ctx.number();
-            ctx.bitmask_number_array();
+            ctx.bitmask_u8_number_array();
         }
         CHARWAIT => match ctx.version() {
             WorldRe => {
@@ -512,7 +547,7 @@ pub(super) fn get_schema_for_command(
             ctx.number();
             ctx.number();
             ctx.number();
-            ctx.bitmask_number_array();
+            ctx.bitmask_u8_number_array();
         }
         CHARDEL => {
             guard!(WorldRe);
@@ -536,20 +571,25 @@ pub(super) fn get_schema_for_command(
             ctx.string()
         }
 
-        // Konosuba
+        // Dungeon crawler-specific commands
         SLEEP => {
-            guard!(Konosuba);
+            guard!(verpat!(@dungeon-crawler));
             ctx.u16();
             ctx.number();
             ctx.number();
             ctx.number();
             ctx.number();
         }
-        VSET => {
-            guard!(Konosuba);
-            ctx.number();
-            ctx.number();
-        }
+        VSET => match ctx.version() {
+            Konosuba => {
+                ctx.number();
+                ctx.number();
+            }
+            Gohanayome => {
+                ctx.custom(OperationElement::GohanayomeVsetArg);
+            }
+            _ => return OperationResult::Unreachable,
+        },
 
         // Higurashi Sui
         TIPSGET => {
@@ -569,20 +609,20 @@ pub(super) fn get_schema_for_command(
             ctx.number();
         }
         CHART => {
-            guard!(@higurashi);
+            guard!(verpat!(@higurashi));
             ctx.u8();
             ctx.number_array(LengthKind::U8Length);
         }
         SNRSEL => {
-            guard!(@higurashi);
+            guard!(verpat!(@higurashi));
             ctx.number();
         }
 
         KAKERA => {
-            guard!(@higurashi);
+            guard!(verpat!(@higurashi));
         }
         KAKERAGET => {
-            guard!(@higurashi);
+            guard!(verpat!(@higurashi));
             ctx.number();
             ctx.number_array(LengthKind::U8Length);
         }
@@ -597,13 +637,13 @@ pub(super) fn get_schema_for_command(
                 Umineko | Gerokasu2 => {
                     ctx.number();
                 }
-                AliasCarnival | WhiteEternity | WorldRe | DC4 | Konosuba => {
+                AliasCarnival | WhiteEternity | WorldRe | DC4 | Konosuba | Gohanayome => {
                     return OperationResult::Unreachable;
                 }
             }
         }
         FAKESELECT => {
-            guard!(@higurashi);
+            guard!(verpat!(@higurashi));
         }
 
         // Umineko
@@ -648,6 +688,51 @@ pub(super) fn get_schema_for_command(
             ctx.number();
         }
 
+        // Gohanayome
+        BGMSAVE => {
+            guard!(Gohanayome);
+            ctx.number();
+        }
+        BGMLOAD => {
+            guard!(Gohanayome);
+            ctx.number();
+            ctx.number();
+        }
+
+        SPINEANM => {
+            guard!(Gohanayome);
+            ctx.number();
+            ctx.string();
+            ctx.number();
+            ctx.number();
+        }
+        SPINEWAIT => {
+            guard!(Gohanayome);
+            ctx.number();
+        }
+        BUPEMOTE => {
+            guard!(Gohanayome);
+            ctx.number();
+            ctx.number();
+        }
+        STATSHOW => {
+            guard!(Gohanayome);
+            ctx.number();
+        }
+
+        VIBRATE => {
+            guard!(Gohanayome);
+            ctx.number();
+            ctx.number();
+        }
+
+        DEBUGTITLE => {
+            guard!(Gohanayome);
+            ctx.string();
+            // FIXME: this array should be bound to size of 9
+            ctx.number_array(LengthKind::U8Length);
+        }
+
         DEBUGOUT => match ctx.version() {
             HigurashiSui | WorldRe => return OperationResult::Unreachable,
             AliasCarnival => {
@@ -655,8 +740,9 @@ pub(super) fn get_schema_for_command(
                 ctx.u16();
             }
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 => {
+            | Gerokasu2 | Gohanayome => {
                 ctx.string();
+                // FIXME: this array should be bound to size of 9
                 ctx.number_array(LengthKind::U8Length);
             }
         },

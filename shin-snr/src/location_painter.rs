@@ -28,10 +28,12 @@ pub enum LocationColor {
     OptionalNumber,
     NumberArray,
     PadNumberArray,
-    BitmaskNumberArray,
+    BitmaskU8NumberArray,
+    BitmaskU16NumberArray,
     String,
     StringArray,
     HiguSuiWipeArg,
+    GohanayomeVsetArg,
 }
 
 pub fn paint_locations(mut reader: Reader, schema: &EngineSchema) -> Vec<LocationColor> {
@@ -81,10 +83,12 @@ pub fn paint_locations(mut reader: Reader, schema: &EngineSchema) -> Vec<Locatio
                 OperationElement::OptionalNumber => LocationColor::OptionalNumber,
                 OperationElement::NumberArray(_) => LocationColor::NumberArray,
                 OperationElement::PadNumberArray(_) => LocationColor::PadNumberArray,
-                OperationElement::BitmaskNumberArray => LocationColor::BitmaskNumberArray,
+                OperationElement::BitmaskU8NumberArray => LocationColor::BitmaskU8NumberArray,
+                OperationElement::BitmaskU16NumberArray => LocationColor::BitmaskU16NumberArray,
                 OperationElement::String(_) => LocationColor::String,
                 OperationElement::StringArray(_) => LocationColor::StringArray,
                 OperationElement::HiguSuiWipeArg => LocationColor::HiguSuiWipeArg,
+                OperationElement::GohanayomeVsetArg => LocationColor::GohanayomeVsetArg,
             };
 
             colors[start_position as usize..end_position as usize].fill(color);

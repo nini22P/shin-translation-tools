@@ -40,6 +40,8 @@ pub enum ShinVersion {
     Umineko,
     /// 2025-03-14 Switch `0100451020714000`
     Gerokasu2,
+    /// 2025-18-09 Switch `01006DA020604000`
+    Gohanayome,
 }
 
 #[macro_use]
@@ -56,7 +58,14 @@ mod verpat {
             HigurashiSui | AliasCarnival | WorldRe
         };
         (@post-shin) => {
-            WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2
+            WhiteEternity
+                | HigurashiHou
+                | HigurashiHouV2
+                | DC4
+                | Konosuba
+                | Umineko
+                | Gerokasu2
+                | Gohanayome
         };
         (@post-plane) => {
             DC4 | Umineko | Gerokasu2
@@ -64,22 +73,14 @@ mod verpat {
         (@higurashi) => {
             HigurashiSui | HigurashiHou | HigurashiHouV2
         };
-        (@not-konosuba) => {
-            HigurashiSui
-                | AliasCarnival
-                | WhiteEternity
-                | HigurashiHou
-                | HigurashiHouV2
-                | DC4
-                | Umineko
-                | Gerokasu2
-                | WorldRe
+        (@dungeon-crawler) => {
+            Konosuba | Gohanayome
         };
         (@vita) => {
             HigurashiSui | AliasCarnival | WhiteEternity | WorldRe
         };
         (@switch) => {
-            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2
+            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome
         };
         ($pattern:pat) => {
             $pattern
@@ -123,6 +124,10 @@ pub enum StringKind {
     // Alias Carnival
     Named,
     Stageinfo,
+
+    // Gohanayome
+    Spineanm,
+    Dbgtitle,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -185,7 +190,9 @@ impl ShinVersion {
 
         match self {
             HigurashiSui | AliasCarnival | WhiteEternity | WorldRe => U16,
-            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 => VarInt,
+            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
+                VarInt
+            }
         }
     }
 
@@ -196,12 +203,12 @@ impl ShinVersion {
         match self {
             HigurashiSui | AliasCarnival | WorldRe => LengthKind::U8Length,
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 => LengthKind::U16Length,
+            | Gerokasu2 | Gohanayome => LengthKind::U16Length,
         }
     }
 
     /// A length for gt and gosubt instructions
-    pub fn gt_gosubt_length(&self) -> LengthKind {
+    pub fn jt_gosubt_length(&self) -> LengthKind {
         use ShinVersion::*;
 
         match self {
@@ -209,7 +216,7 @@ impl ShinVersion {
             // SUS: are all those old versions __really__ all using u16?
             // The trend has been in increasing the sizes, not randomly decreasing them for a single series
             HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | DC4 | Konosuba | Umineko
-            | Gerokasu2 => LengthKind::U16Length,
+            | Gerokasu2 | Gohanayome => LengthKind::U16Length,
         }
     }
 
@@ -222,7 +229,7 @@ impl ShinVersion {
             HigurashiSui => match kind {
                 Saveinfo | Select | Voiceplay => U8Length,
                 Msgset | Logset => U16Length,
-                Dbgout | Chatset | Named | Stageinfo => {
+                Dbgout | Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
@@ -230,7 +237,7 @@ impl ShinVersion {
             AliasCarnival => match kind {
                 Saveinfo | Select | Dbgout | Voiceplay | Stageinfo | Named => U8Length,
                 Msgset | Logset => U16Length,
-                Chatset => {
+                Chatset | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
@@ -238,7 +245,7 @@ impl ShinVersion {
             WorldRe => match kind {
                 Saveinfo | Select | Voiceplay => U8Length,
                 Msgset | Logset => U16Length,
-                Dbgout | Chatset | Named | Stageinfo => {
+                Dbgout | Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
@@ -246,7 +253,7 @@ impl ShinVersion {
             WhiteEternity => match kind {
                 Saveinfo | Select | Dbgout | Voiceplay => U8Length,
                 Msgset | Logset => U16Length,
-                Chatset | Named | Stageinfo => {
+                Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
@@ -254,7 +261,7 @@ impl ShinVersion {
             HigurashiHou => match kind {
                 Saveinfo | Select | Dbgout | Voiceplay => U8Length,
                 Msgset | Logset => U16Length,
-                Chatset | Named | Stageinfo => {
+                Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
@@ -262,36 +269,44 @@ impl ShinVersion {
             HigurashiHouV2 => match kind {
                 Saveinfo | Select | Dbgout | Voiceplay => U8Length,
                 Msgset | Logset => U16Length,
-                Chatset | Named | Stageinfo => {
+                Chatset | Named | Stageinfo | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
             },
             DC4 => match kind {
                 Saveinfo | Select | Dbgout | Voiceplay | Msgset | Chatset => U16Length,
-                Logset | Named | Stageinfo => {
+                Logset | Named | Stageinfo | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
             },
             Konosuba => match kind {
-                Saveinfo | Select | Dbgout | Voiceplay => U8Length,
+                Select | Dbgout | Voiceplay => U8Length,
                 Msgset => U16Length,
-                Chatset | Logset | Named | Stageinfo => {
+                Saveinfo | Chatset | Logset | Named | Stageinfo | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
             },
             Umineko => match kind {
                 Msgset | Select | Voiceplay | Saveinfo | Dbgout => U16Length,
-                Logset | Named | Stageinfo | Chatset => {
+                Logset | Named | Stageinfo | Chatset | Spineanm | Dbgtitle => {
                     // not in this game
                     unreachable!()
                 }
             },
             Gerokasu2 => match kind {
                 Msgset | Select | Voiceplay | Saveinfo | Dbgout => U16Length,
-                Logset | Named | Stageinfo | Chatset => {
+                Logset | Named | Stageinfo | Chatset | Spineanm | Dbgtitle => {
+                    // not in this game
+                    unreachable!()
+                }
+            },
+            Gohanayome => match kind {
+                Select | Voiceplay | Dbgtitle | Spineanm | Dbgout => U8Length,
+                Msgset => U16Length,
+                Saveinfo | Chatset | Logset | Named | Stageinfo => {
                     // not in this game
                     unreachable!()
                 }
@@ -333,6 +348,9 @@ impl ShinVersion {
             },
             Gerokasu2 => match kind {
                 SelectChoice => U16Length,
+            },
+            Gohanayome => match kind {
+                SelectChoice => U8Length,
             },
         };
 
@@ -380,7 +398,7 @@ impl ShinVersion {
                 fixup_command_arguments: true,
                 fixup_character_names: false,
             }),
-            Gerokasu2 => StringPolicy::Utf8,
+            Gerokasu2 | Gohanayome => StringPolicy::Utf8,
         }
     }
 
@@ -390,7 +408,7 @@ impl ShinVersion {
         match self {
             HigurashiSui | AliasCarnival | WorldRe => MessageCommandStyle::Unescaped,
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 => MessageCommandStyle::Escaped,
+            | Gerokasu2 | Gohanayome => MessageCommandStyle::Escaped,
         }
     }
 
@@ -411,8 +429,8 @@ impl ShinVersion {
             DC4 => Rom2V1_1,
             Umineko => Rom2V1_1,
             Gerokasu2 => Rom2V1_1,
-            // konosuba doesn't store its assets in the rom, it just uses switch's romfs
-            Konosuba => return None,
+            // dungeon crawler games don't store its assets in the rom, it just uses switch's romfs
+            verpat!(@dungeon-crawler) => return None,
         })
     }
 
@@ -425,7 +443,7 @@ impl ShinVersion {
             // this causes issues with some of our asserts
             WorldRe => true,
             HigurashiSui | AliasCarnival | WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4
-            | Konosuba | Umineko | Gerokasu2 => false,
+            | Konosuba | Umineko | Gerokasu2 | Gohanayome => false,
         }
     }
 }

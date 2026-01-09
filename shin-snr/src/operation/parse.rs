@@ -158,9 +158,19 @@ impl<'a, 'snr> InstructionParseContext<'a, 'snr> {
         self.arena.lengths.push(number_count);
     }
 
-    fn take_bitmask_number_array(&mut self) {
+    fn take_bitmask_u8_number_array(&mut self) {
         let mask = self.reader.take_u8();
         self.arena.u8s.push(mask);
+        let len = mask.count_ones() as u16;
+        self.arena.lengths.push(len);
+        for _ in 0..len {
+            self.take_number();
+        }
+    }
+
+    fn take_bitmask_u16_number_array(&mut self) {
+        let mask = self.reader.take_u16();
+        self.arena.u16s.push(mask);
         let len = mask.count_ones() as u16;
         self.arena.lengths.push(len);
         for _ in 0..len {
@@ -181,6 +191,23 @@ impl<'a, 'snr> InstructionParseContext<'a, 'snr> {
         self.arena.lengths.push(len);
         for _ in 0..len {
             self.take_number();
+        }
+    }
+
+    fn take_gohanayome_vset_arg(&mut self) {
+        self.take_number();
+
+        let ty = self.reader.take_u8();
+        self.arena.u8s.push(ty);
+
+        match ty {
+            0 => {
+                self.take_number();
+            }
+            1 | 2 => {
+                self.take_string(LengthKind::U8Length);
+            }
+            _ => panic!("Unknown gohanayome VSET argument subtype: {}", ty),
         }
     }
 
@@ -216,10 +243,12 @@ impl<'a, 'snr> InstructionParseContext<'a, 'snr> {
                     self.take_pad_number();
                 }
             }
-            OperationElement::BitmaskNumberArray => self.take_bitmask_number_array(),
+            OperationElement::BitmaskU8NumberArray => self.take_bitmask_u8_number_array(),
+            OperationElement::BitmaskU16NumberArray => self.take_bitmask_u16_number_array(),
             OperationElement::String(length_kind) => self.take_string(length_kind),
             OperationElement::StringArray(length_kind) => self.take_string_array(length_kind),
             OperationElement::HiguSuiWipeArg => self.take_higu_sui_wipe_arg(),
+            OperationElement::GohanayomeVsetArg => self.take_gohanayome_vset_arg(),
         }
     }
 }
