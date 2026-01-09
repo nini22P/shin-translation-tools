@@ -13,15 +13,17 @@ use crate::{
         arena::OperationArena,
         schema::{Opcode, OperationSchema},
     },
-    reactor::{AnyStringSource, Reactor, StringArraySource, StringSource},
+    reactor::{
+        AnyLocalizableStringSource, LocalizableStringArraySource, LocalizableStringSource, Reactor,
+    },
     text::decode_zstring,
 };
 
 pub trait StringTraceListener {
-    fn on_string(&mut self, instr_offset: u32, source: AnyStringSource, s: &str);
+    fn on_string(&mut self, instr_offset: u32, source: AnyLocalizableStringSource, s: &str);
 }
 
-pub struct StringTraceReactor<L> {
+pub struct LocalizableStringTraceReactor<L> {
     string_encoding: StringEncoding,
     snr_style: MessageCommandStyle,
     user_style: MessageCommandStyle,
@@ -29,7 +31,7 @@ pub struct StringTraceReactor<L> {
     bump: Bump,
 }
 
-impl<L: StringTraceListener> StringTraceReactor<L> {
+impl<L: StringTraceListener> LocalizableStringTraceReactor<L> {
     pub fn new(
         string_encoding: StringEncoding,
         snr_style: MessageCommandStyle,
@@ -45,7 +47,12 @@ impl<L: StringTraceListener> StringTraceReactor<L> {
         }
     }
 
-    fn on_string_impl(&mut self, operation_position: u32, source: AnyStringSource, s: &[u8]) {
+    fn on_string_impl(
+        &mut self,
+        operation_position: u32,
+        source: AnyLocalizableStringSource,
+        s: &[u8],
+    ) {
         let snr_string = decode_zstring(
             &self.bump,
             self.string_encoding,
@@ -68,7 +75,7 @@ impl<L: StringTraceListener> StringTraceReactor<L> {
     }
 }
 
-impl<L: StringTraceListener> Reactor for StringTraceReactor<L> {
+impl<L: StringTraceListener> Reactor for LocalizableStringTraceReactor<L> {
     fn react(
         &mut self,
         operation_position: u32,
@@ -80,31 +87,27 @@ impl<L: StringTraceListener> Reactor for StringTraceReactor<L> {
         for element in arena.iter(&op_schema) {
             match element {
                 OperationElementRepr::String(_, string) => {
-                    let Some(source) = StringSource::for_operation(opcode, op_schema, arena) else {
-                        panic!("Could not determine StringSource for opcode {:?}", opcode)
-                    };
-
-                    self.on_string_impl(
-                        operation_position,
-                        AnyStringSource::Singular(source),
-                        string,
-                    );
-                }
-                OperationElementRepr::StringArray(_, string_array) => {
-                    let Some(source) = StringArraySource::for_operation(opcode, op_schema, arena)
-                    else {
-                        panic!(
-                            "Could not determine StringArraySource for opcode {:?}",
-                            opcode
-                        )
-                    };
-
-                    for (i, string) in (0..).zip(StringArrayIter::new(string_array)) {
+                    if let Some(source) =
+                        LocalizableStringSource::for_operation(opcode, op_schema, arena)
+                    {
                         self.on_string_impl(
                             operation_position,
-                            AnyStringSource::Array(source, i),
+                            AnyLocalizableStringSource::Singular(source),
                             string,
                         );
+                    }
+                }
+                OperationElementRepr::StringArray(_, string_array) => {
+                    if let Some(source) =
+                        LocalizableStringArraySource::for_operation(opcode, op_schema, arena)
+                    {
+                        for (i, string) in (0..).zip(StringArrayIter::new(string_array)) {
+                            self.on_string_impl(
+                                operation_position,
+                                AnyLocalizableStringSource::Array(source, i),
+                                string,
+                            );
+                        }
                     }
                 }
                 _ => {

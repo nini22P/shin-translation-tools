@@ -1,4 +1,4 @@
-use shin_versions::{AnyStringKind, StringArrayKind, StringKind};
+use shin_versions::{AnyStringKind, LocalizableStringKind, StringArrayKind};
 
 use crate::{
     operation::{
@@ -58,43 +58,43 @@ pub fn react_with<R: Reactor>(mut reader: Reader, schema: &EngineSchema, reactor
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum AnyStringSource {
-    Singular(StringSource),
-    Array(StringArraySource, u32),
+pub enum AnyLocalizableStringSource {
+    Singular(LocalizableStringSource),
+    Array(LocalizableStringArraySource, u32),
 }
 
-impl AnyStringSource {
+impl AnyLocalizableStringSource {
     pub fn kind(&self) -> AnyStringKind {
         match self {
-            AnyStringSource::Singular(s) => AnyStringKind::Singular(s.kind()),
-            AnyStringSource::Array(s, _) => AnyStringKind::Array(s.kind()),
+            AnyLocalizableStringSource::Singular(s) => AnyStringKind::Singular(s.kind()),
+            AnyLocalizableStringSource::Array(s, _) => AnyStringKind::Array(s.kind()),
         }
     }
 
     pub fn subindex(&self) -> u32 {
         match self {
-            AnyStringSource::Singular(s) => s.subindex(),
-            &AnyStringSource::Array(_, i) => i,
+            AnyLocalizableStringSource::Singular(s) => s.subindex(),
+            &AnyLocalizableStringSource::Array(_, i) => i,
         }
     }
 
     pub fn is_for_messagebox(&self) -> bool {
         match self {
-            AnyStringSource::Singular(s) => s.is_for_messagebox(),
-            AnyStringSource::Array(s, _) => s.is_for_messagebox(),
+            AnyLocalizableStringSource::Singular(s) => s.is_for_messagebox(),
+            AnyLocalizableStringSource::Array(s, _) => s.is_for_messagebox(),
         }
     }
 
     pub fn contains_commands(&self) -> bool {
         match self {
-            AnyStringSource::Singular(s) => s.contains_commands(),
-            AnyStringSource::Array(s, _) => s.contains_commands(),
+            AnyLocalizableStringSource::Singular(s) => s.contains_commands(),
+            AnyLocalizableStringSource::Array(s, _) => s.contains_commands(),
         }
     }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum StringSource {
+pub enum LocalizableStringSource {
     Saveinfo,
     Select,
     Msgset(u32),
@@ -107,22 +107,24 @@ pub enum StringSource {
     // Alias Carnival
     Named,
     Stageinfo,
-    // Gohanayome
-    Spineanm,
-    Dbgtitle,
 }
 
-impl StringSource {
+impl LocalizableStringSource {
     pub fn for_operation(
         opcode: Opcode,
         op_schema: &OperationSchema,
         arena: &OperationArena,
     ) -> Option<Self> {
         match opcode {
-            Opcode::Instruction(_) => None,
+            Opcode::Instruction(_) => {
+                panic!(
+                    "Could not determine LocalizableStringSource for opcode {:?}",
+                    opcode
+                )
+            }
             Opcode::Command(cmd) => match cmd {
-                Command::SAVEINFO => Some(StringSource::Saveinfo),
-                Command::SELECT => Some(StringSource::Select),
+                Command::SAVEINFO => Some(LocalizableStringSource::Saveinfo),
+                Command::SELECT => Some(LocalizableStringSource::Select),
                 Command::MSGSET => {
                     let OperationElementRepr::U32(first_argument) = arena
                         .iter(op_schema)
@@ -133,91 +135,89 @@ impl StringSource {
                     };
                     // the lower 24-bit are the message id
                     // the top 8 bits are some other thing
-                    Some(StringSource::Msgset(first_argument & 0xffffff))
+                    Some(LocalizableStringSource::Msgset(first_argument & 0xffffff))
                 }
-                Command::DEBUGOUT => Some(StringSource::Dbgout),
-                Command::LOGSET => Some(StringSource::Logset),
-                Command::VOICEPLAY => Some(StringSource::Voiceplay),
-                Command::CHATSET => Some(StringSource::Chatset),
-                Command::NAMED => Some(StringSource::Named),
-                Command::STAGEINFO => Some(StringSource::Stageinfo),
-                Command::SPINEANM => Some(StringSource::Spineanm),
-                Command::DEBUGTITLE => Some(StringSource::Dbgtitle),
+                Command::DEBUGOUT => Some(LocalizableStringSource::Dbgout),
+                Command::LOGSET => Some(LocalizableStringSource::Logset),
+                Command::VOICEPLAY => Some(LocalizableStringSource::Voiceplay),
+                Command::CHATSET => Some(LocalizableStringSource::Chatset),
+                Command::NAMED => Some(LocalizableStringSource::Named),
+                Command::STAGEINFO => Some(LocalizableStringSource::Stageinfo),
+                // those are not localizable because they do not get shown to the user
+                Command::SPINEANM => None,
+                Command::DEBUGTITLE => None,
 
-                _ => None,
+                _ => panic!(
+                    "Could not determine LocalizableStringSource for opcode {:?}",
+                    opcode
+                ),
             },
         }
     }
 
-    pub fn from_kind(kind: StringKind, subindex: u32) -> Self {
+    pub fn from_kind(kind: LocalizableStringKind, subindex: u32) -> Self {
         match kind {
-            StringKind::Saveinfo => StringSource::Saveinfo,
-            StringKind::Select => StringSource::Select,
-            StringKind::Msgset => StringSource::Msgset(subindex),
-            StringKind::Dbgout => StringSource::Dbgout,
-            StringKind::Logset => StringSource::Logset,
-            StringKind::Voiceplay => StringSource::Voiceplay,
-            StringKind::Chatset => StringSource::Chatset,
-            StringKind::Named => StringSource::Named,
-            StringKind::Stageinfo => StringSource::Stageinfo,
-            StringKind::Spineanm => StringSource::Spineanm,
-            StringKind::Dbgtitle => StringSource::Dbgtitle,
+            LocalizableStringKind::Saveinfo => LocalizableStringSource::Saveinfo,
+            LocalizableStringKind::Select => LocalizableStringSource::Select,
+            LocalizableStringKind::Msgset => LocalizableStringSource::Msgset(subindex),
+            LocalizableStringKind::Dbgout => LocalizableStringSource::Dbgout,
+            LocalizableStringKind::Logset => LocalizableStringSource::Logset,
+            LocalizableStringKind::Voiceplay => LocalizableStringSource::Voiceplay,
+            LocalizableStringKind::Chatset => LocalizableStringSource::Chatset,
+            LocalizableStringKind::Named => LocalizableStringSource::Named,
+            LocalizableStringKind::Stageinfo => LocalizableStringSource::Stageinfo,
         }
     }
 
-    pub fn kind(&self) -> StringKind {
+    pub fn kind(&self) -> LocalizableStringKind {
         match *self {
-            StringSource::Saveinfo => StringKind::Saveinfo,
-            StringSource::Select => StringKind::Select,
-            StringSource::Msgset(_) => StringKind::Msgset,
-            StringSource::Dbgout => StringKind::Dbgout,
-            StringSource::Logset => StringKind::Logset,
-            StringSource::Voiceplay => StringKind::Voiceplay,
-            StringSource::Chatset => StringKind::Chatset,
-            StringSource::Named => StringKind::Named,
-            StringSource::Stageinfo => StringKind::Stageinfo,
-            StringSource::Spineanm => StringKind::Spineanm,
-            StringSource::Dbgtitle => StringKind::Dbgtitle,
+            LocalizableStringSource::Saveinfo => LocalizableStringKind::Saveinfo,
+            LocalizableStringSource::Select => LocalizableStringKind::Select,
+            LocalizableStringSource::Msgset(_) => LocalizableStringKind::Msgset,
+            LocalizableStringSource::Dbgout => LocalizableStringKind::Dbgout,
+            LocalizableStringSource::Logset => LocalizableStringKind::Logset,
+            LocalizableStringSource::Voiceplay => LocalizableStringKind::Voiceplay,
+            LocalizableStringSource::Chatset => LocalizableStringKind::Chatset,
+            LocalizableStringSource::Named => LocalizableStringKind::Named,
+            LocalizableStringSource::Stageinfo => LocalizableStringKind::Stageinfo,
         }
     }
 
     pub fn subindex(&self) -> u32 {
         match *self {
-            StringSource::Saveinfo => 0,
-            StringSource::Select => 0,
-            StringSource::Msgset(i) => i,
-            StringSource::Dbgout => 0,
-            StringSource::Logset => 0,
-            StringSource::Voiceplay => 0,
-            StringSource::Chatset => 0,
-            StringSource::Named => 0,
-            StringSource::Stageinfo => 0,
-            StringSource::Spineanm => 0,
-            StringSource::Dbgtitle => 0,
+            LocalizableStringSource::Saveinfo => 0,
+            LocalizableStringSource::Select => 0,
+            LocalizableStringSource::Msgset(i) => i,
+            LocalizableStringSource::Dbgout => 0,
+            LocalizableStringSource::Logset => 0,
+            LocalizableStringSource::Voiceplay => 0,
+            LocalizableStringSource::Chatset => 0,
+            LocalizableStringSource::Named => 0,
+            LocalizableStringSource::Stageinfo => 0,
         }
     }
 
     pub fn is_for_messagebox(&self) -> bool {
         match self {
-            StringSource::Msgset(_) | StringSource::Logset => true,
+            LocalizableStringSource::Msgset(_) | LocalizableStringSource::Logset => true,
             _ => false,
         }
     }
 
     pub fn contains_commands(&self) -> bool {
         match self {
-            StringSource::Msgset(_) | StringSource::Logset => true,
+            LocalizableStringSource::Msgset(_) | LocalizableStringSource::Logset => true,
             _ => false,
         }
     }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum StringArraySource {
+pub enum LocalizableStringArraySource {
     Select,
 }
 
-impl StringArraySource {
+impl LocalizableStringArraySource {
     pub fn for_operation(
         opcode: Opcode,
         _op_schema: &OperationSchema,
@@ -226,32 +226,32 @@ impl StringArraySource {
         match opcode {
             Opcode::Instruction(_) => None,
             Opcode::Command(cmd) => match cmd {
-                Command::SELECT => Some(StringArraySource::Select),
+                Command::SELECT => Some(LocalizableStringArraySource::Select),
                 _ => None,
             },
         }
     }
     pub fn from_kind(kind: StringArrayKind) -> Self {
         match kind {
-            StringArrayKind::SelectChoice => StringArraySource::Select,
+            StringArrayKind::SelectChoice => LocalizableStringArraySource::Select,
         }
     }
 
     pub fn kind(&self) -> StringArrayKind {
         match self {
-            StringArraySource::Select => StringArrayKind::SelectChoice,
+            LocalizableStringArraySource::Select => StringArrayKind::SelectChoice,
         }
     }
 
     pub fn is_for_messagebox(&self) -> bool {
         match self {
-            StringArraySource::Select => false,
+            LocalizableStringArraySource::Select => false,
         }
     }
 
     pub fn contains_commands(&self) -> bool {
         match self {
-            StringArraySource::Select => true,
+            LocalizableStringArraySource::Select => true,
         }
     }
 }

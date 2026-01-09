@@ -19,7 +19,7 @@ use shin_snr::{
             StringRewriter,
         },
         string_roundrip_validator::StringRoundtripValidatorReactor,
-        trace::{ConsoleTraceListener, CsvTraceListener, StringTraceReactor},
+        trace::{ConsoleTraceListener, CsvTraceListener, LocalizableStringTraceReactor},
     },
     reader::Reader,
 };
@@ -314,7 +314,7 @@ impl Command {
                 let snr_style = version.message_command_style();
                 let user_style = message_style.apply(snr_style);
 
-                let mut reactor = StringTraceReactor::new(
+                let mut reactor = LocalizableStringTraceReactor::new(
                     encoding,
                     snr_style,
                     user_style,
@@ -331,8 +331,12 @@ impl Command {
                 let snr_style = version.message_command_style();
                 let user_style = message_style.apply(snr_style);
 
-                let mut reactor =
-                    StringTraceReactor::new(encoding, snr_style, user_style, ConsoleTraceListener);
+                let mut reactor = LocalizableStringTraceReactor::new(
+                    encoding,
+                    snr_style,
+                    user_style,
+                    ConsoleTraceListener,
+                );
 
                 react_with(reader, schema, &mut reactor);
             }

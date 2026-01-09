@@ -6,7 +6,10 @@ use shin_versions::{AnyStringKind, MessageCommandStyle};
 
 use crate::{
     layout::message_parser::lint::diagnostics::LineReport,
-    reactor::{AnyStringSource, StringArraySource, StringSource, rewrite::StringRewriter},
+    reactor::{
+        AnyLocalizableStringSource, LocalizableStringArraySource, LocalizableStringSource,
+        rewrite::StringRewriter,
+    },
 };
 
 fn deser_hex<'de, D: serde::Deserializer<'de>>(deser: D) -> Result<u32, D::Error> {
@@ -44,11 +47,11 @@ impl RawEntry {
         Entry {
             offset: self.offset,
             source: match self.source {
-                AnyStringKind::Singular(singular) => AnyStringSource::Singular(
-                    StringSource::from_kind(singular, self.source_subindex),
+                AnyStringKind::Singular(singular) => AnyLocalizableStringSource::Singular(
+                    LocalizableStringSource::from_kind(singular, self.source_subindex),
                 ),
-                AnyStringKind::Array(array) => AnyStringSource::Array(
-                    StringArraySource::from_kind(array),
+                AnyStringKind::Array(array) => AnyLocalizableStringSource::Array(
+                    LocalizableStringArraySource::from_kind(array),
                     self.source_subindex,
                 ),
             },
@@ -71,7 +74,7 @@ pub enum StringReplacementMode {
 #[derive(Clone)]
 struct Entry {
     offset: u32,
-    source: AnyStringSource,
+    source: AnyLocalizableStringSource,
     s: String,
     translated: Option<String>,
 }
@@ -176,7 +179,7 @@ impl StringRewriter for CsvRewriter {
         _decoded: &'bump str,
         instr_index: u32,
         instr_offset: u32,
-        source: AnyStringSource,
+        source: AnyLocalizableStringSource,
     ) -> Option<&'bump str> {
         // no entry -> no replacement
         let entry = self.entries[instr_index as usize].as_ref()?;

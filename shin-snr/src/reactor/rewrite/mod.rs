@@ -21,7 +21,9 @@ use crate::{
         schema::{Opcode, OperationSchema},
         serialize::InstructionSerializeContext,
     },
-    reactor::{AnyStringSource, Reactor, StringArraySource, StringSource},
+    reactor::{
+        AnyLocalizableStringSource, LocalizableStringArraySource, LocalizableStringSource, Reactor,
+    },
     text::{decode_zstring, encode_utf8_zstring},
     writer::{CountingWriter, RealWriter, Writer},
 };
@@ -68,7 +70,7 @@ pub trait StringRewriter {
         raw_decoded: &'bump str,
         instr_index: u32,
         instr_offset: u32,
-        source: AnyStringSource,
+        source: AnyLocalizableStringSource,
     ) -> Option<&'bump str>;
 }
 
@@ -79,7 +81,7 @@ impl StringRewriter for () {
         _decoded: &'bump str,
         _instr_index: u32,
         _instr_offset: u32,
-        _source: AnyStringSource,
+        _source: AnyLocalizableStringSource,
     ) -> Option<&'bump str> {
         None
     }
@@ -224,7 +226,7 @@ impl<'a, R: StringRewriter> Stringer<'a, R> {
         &'s self,
         position: &mut Position,
         original: &'s [u8],
-        source: AnyStringSource,
+        source: AnyLocalizableStringSource,
     ) -> &'s [u8] {
         assert_eq!(
             original.last().copied(),
@@ -369,41 +371,44 @@ impl<'a, R: StringRewriter, M: RewriteMode2> Reactor for RewriteReactor<'a, R, M
         for element in arena.iter(&op_schema) {
             match element {
                 OperationElementRepr::String(kind, string) => {
-                    let Some(source) = StringSource::for_operation(opcode, op_schema, arena) else {
-                        panic!("Could not determine StringSource for opcode {:?}", opcode)
+                    let rewritten = if let Some(source) =
+                        LocalizableStringSource::for_operation(opcode, op_schema, arena)
+                    {
+                        self.stringer.rewrite_string(
+                            &mut self.position,
+                            string,
+                            AnyLocalizableStringSource::Singular(source),
+                        )
+                    } else {
+                        string
                     };
-
-                    let rewritten = self.stringer.rewrite_string(
-                        &mut self.position,
-                        string,
-                        AnyStringSource::Singular(source),
-                    );
 
                     self.mode
                         .put_element(&OperationElementRepr::String(kind, rewritten))
                 }
                 OperationElementRepr::StringArray(kind, string_array) => {
-                    let Some(source) = StringArraySource::for_operation(opcode, op_schema, arena)
-                    else {
-                        panic!(
-                            "Could not determine StringArraySource for opcode {:?}",
-                            opcode
-                        )
+                    let rewritten = if let Some(source) =
+                        LocalizableStringArraySource::for_operation(opcode, op_schema, arena)
+                    {
+                        let mut rewritten = bumpalo::collections::Vec::new_in(&self.stringer.bump);
+
+                        for (i, s) in (0..).zip(StringArrayIter::new(string_array)) {
+                            let s = self.stringer.rewrite_string(
+                                &mut self.position,
+                                s,
+                                AnyLocalizableStringSource::Array(source, i),
+                            );
+                            rewritten.extend_from_slice(s);
+                        }
+                        rewritten.push(0);
+
+                        rewritten.into_bump_slice()
+                    } else {
+                        string_array
                     };
 
-                    let mut rewritten = bumpalo::collections::Vec::new_in(&self.stringer.bump);
-                    for (i, s) in (0..).zip(StringArrayIter::new(string_array)) {
-                        let s = self.stringer.rewrite_string(
-                            &mut self.position,
-                            s,
-                            AnyStringSource::Array(source, i),
-                        );
-                        rewritten.extend_from_slice(s);
-                    }
-                    rewritten.push(0);
-
                     self.mode
-                        .put_element(&OperationElementRepr::StringArray(kind, &rewritten))
+                        .put_element(&OperationElementRepr::StringArray(kind, rewritten))
                 }
                 element => self.mode.put_element(&element),
             }

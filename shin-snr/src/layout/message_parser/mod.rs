@@ -13,7 +13,7 @@ use shin_text::FixupDetectResult;
 use shin_versions::{MessageCommandStyle, SjisMessageFixupPolicy};
 use sink::{CountingStringSink, FullStringSink, StringSink, TokenSink};
 
-use crate::{layout::layouter::GameLayoutInfo, reactor::AnyStringSource};
+use crate::{layout::layouter::GameLayoutInfo, reactor::AnyLocalizableStringSource};
 
 #[derive(Copy, Clone, Debug)]
 pub enum ParseIntArgError {
@@ -442,7 +442,7 @@ pub fn infer_string_fixup_policy<'bump>(
     style: MessageCommandStyle,
     message_policy: SjisMessageFixupPolicy,
     detected: FixupDetectResult,
-    source: AnyStringSource,
+    source: AnyLocalizableStringSource,
 ) -> &'bump [bool] {
     // some messages are just not fixed up, even though it makes sense to do so
     // in higurashi sui this happens with messages from the debug menu
@@ -492,7 +492,7 @@ pub fn transform_reflow_and_infer_fixup_policy<'bump>(
     out_style: MessageCommandStyle,
     message_policy: SjisMessageFixupPolicy,
     detected: FixupDetectResult,
-    source: AnyStringSource,
+    source: AnyLocalizableStringSource,
 ) -> (&'bump str, &'bump [bool]) {
     if source.contains_commands() {
         let mut tokens = Vec::new_in(bump);
@@ -547,7 +547,7 @@ pub fn transform_reflow<'bump>(
     in_style: MessageCommandStyle,
     reflow: MessageReflowMode,
     out_style: MessageCommandStyle,
-    source: AnyStringSource,
+    source: AnyLocalizableStringSource,
 ) -> &'bump str {
     if source.contains_commands() {
         let mut tokens = Vec::new_in(bump);

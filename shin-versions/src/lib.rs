@@ -101,14 +101,14 @@ pub enum NumberStyle {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(untagged))]
 pub enum AnyStringKind {
-    Singular(StringKind),
+    Singular(LocalizableStringKind),
     Array(StringArrayKind),
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-pub enum StringKind {
+pub enum LocalizableStringKind {
     Saveinfo,
     // NOTE: this is only for the choice title, not the choices themselves, as they are encoded as an array
     Select,
@@ -124,10 +124,6 @@ pub enum StringKind {
     // Alias Carnival
     Named,
     Stageinfo,
-
-    // Gohanayome
-    Spineanm,
-    Dbgtitle,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -401,11 +397,11 @@ mod tests {
     #[cfg(feature = "serde")]
     #[test]
     fn serde_any_string_kind() {
-        use crate::{AnyStringKind, StringArrayKind, StringKind};
+        use crate::{AnyStringKind, LocalizableStringKind, StringArrayKind};
 
         assert_eq!(
             serde_json::from_str::<AnyStringKind>("\"saveinfo\"").unwrap(),
-            AnyStringKind::Singular(StringKind::Saveinfo)
+            AnyStringKind::Singular(LocalizableStringKind::Saveinfo)
         );
         assert_eq!(
             serde_json::from_str::<AnyStringKind>("\"select_choice\"").unwrap(),

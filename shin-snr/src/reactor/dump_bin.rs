@@ -6,7 +6,7 @@ use crate::{
         arena::OperationArena,
         schema::{Opcode, OperationSchema},
     },
-    reactor::{Reactor, StringArraySource, StringSource},
+    reactor::{LocalizableStringArraySource, LocalizableStringSource, Reactor},
 };
 
 pub struct DumpBinReactor<W> {
@@ -34,27 +34,21 @@ where
         for element in arena.iter(&op_schema) {
             match element {
                 OperationElementRepr::String(_, string) => {
-                    let Some(source) = StringSource::for_operation(opcode, op_schema, arena) else {
-                        panic!("Could not determine StringSource for opcode {:?}", opcode)
-                    };
-
-                    if source.is_for_messagebox() {
+                    if let Some(source) =
+                        LocalizableStringSource::for_operation(opcode, op_schema, arena)
+                        && source.is_for_messagebox()
+                    {
                         self.writer
                             .write_all(string)
                             .expect("Failed to write bin dump");
                     }
                 }
                 OperationElementRepr::StringArray(_, string_array) => {
-                    let Some(source) = StringArraySource::for_operation(opcode, op_schema, arena)
-                    else {
-                        panic!(
-                            "Could not determine StringArraySource for opcode {:?}",
-                            opcode
-                        )
-                    };
-
-                    for (_, string) in (0..).zip(StringArrayIter::new(string_array)) {
-                        if source.is_for_messagebox() {
+                    if let Some(source) =
+                        LocalizableStringArraySource::for_operation(opcode, op_schema, arena)
+                        && source.is_for_messagebox()
+                    {
+                        for (_, string) in (0..).zip(StringArrayIter::new(string_array)) {
                             self.writer
                                 .write_all(string)
                                 .expect("Failed to write bin dump");

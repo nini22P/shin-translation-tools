@@ -1,10 +1,10 @@
-use bumpalo::{collections::Vec, Bump};
+use bumpalo::{Bump, collections::Vec};
 use miette::{SourceOffset, SourceSpan};
 use shin_versions::MessageCommandStyle;
 
 use crate::{
-    layout::message_parser::{lint::diagnostics::LineReport, MessageCommand, MessageToken},
-    reactor::AnyStringSource,
+    layout::message_parser::{MessageCommand, MessageToken, lint::diagnostics::LineReport},
+    reactor::AnyLocalizableStringSource,
 };
 
 pub mod diagnostics {
@@ -83,7 +83,7 @@ pub fn lint_string<'bump>(
     bump: &'bump Bump,
     decoded: &'bump str,
     style: MessageCommandStyle,
-    source: AnyStringSource,
+    source: AnyLocalizableStringSource,
     index: u32,
 ) -> Result<(), LineReport> {
     if !source.contains_commands() {

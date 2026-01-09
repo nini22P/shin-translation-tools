@@ -3,7 +3,7 @@ use shin_versions::MessageCommandStyle;
 
 use crate::{
     layout::message_parser::MessageReflowMode,
-    reactor::{AnyStringSource, rewrite::StringRewriter},
+    reactor::{AnyLocalizableStringSource, rewrite::StringRewriter},
 };
 
 /// Exercises the string encoder and decoder, but does not actually rewrite strings.
@@ -28,7 +28,7 @@ impl StringRewriter for NoopRewriter {
         raw_decoded: &'bump str,
         _instr_index: u32,
         _instr_offset: u32,
-        source: AnyStringSource,
+        source: AnyLocalizableStringSource,
     ) -> Option<&'bump str> {
         let transformed = crate::layout::message_parser::transform_reflow(
             bump,

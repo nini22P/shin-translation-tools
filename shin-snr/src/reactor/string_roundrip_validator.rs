@@ -13,7 +13,9 @@ use crate::{
         arena::OperationArena,
         schema::{Opcode, OperationSchema},
     },
-    reactor::{AnyStringSource, Reactor, StringArraySource, StringSource},
+    reactor::{
+        AnyLocalizableStringSource, LocalizableStringArraySource, LocalizableStringSource, Reactor,
+    },
     text::{decode_zstring, encode_utf8_zstring},
 };
 
@@ -140,7 +142,7 @@ fn validate_fixup_policy(decoded: &str, detection_map: &[FixupDetectResult], pol
 }
 
 impl StringRoundtripValidatorReactor {
-    fn roundtrip_string(&self, source: AnyStringSource, string: &[u8]) {
+    fn roundtrip_string(&self, source: AnyLocalizableStringSource, string: &[u8]) {
         let decoded = decode_zstring(
             &self.bump,
             self.policy.encoding(),
@@ -226,23 +228,22 @@ impl<'a> Reactor for StringRoundtripValidatorReactor {
         for element in arena.iter(&op_schema) {
             match element {
                 OperationElementRepr::String(_, string) => {
-                    let Some(source) = StringSource::for_operation(opcode, op_schema, arena) else {
-                        panic!("Could not determine StringSource for opcode {:?}", opcode)
-                    };
-
-                    self.roundtrip_string(AnyStringSource::Singular(source), string);
+                    if let Some(source) =
+                        LocalizableStringSource::for_operation(opcode, op_schema, arena)
+                    {
+                        self.roundtrip_string(AnyLocalizableStringSource::Singular(source), string);
+                    }
                 }
                 OperationElementRepr::StringArray(_, string_array) => {
-                    let Some(source) = StringArraySource::for_operation(opcode, op_schema, arena)
-                    else {
-                        panic!(
-                            "Could not determine StringArraySource for opcode {:?}",
-                            opcode
-                        )
-                    };
-
-                    for (i, string) in (0..).zip(StringArrayIter::new(string_array)) {
-                        self.roundtrip_string(AnyStringSource::Array(source, i), string);
+                    if let Some(source) =
+                        LocalizableStringArraySource::for_operation(opcode, op_schema, arena)
+                    {
+                        for (i, string) in (0..).zip(StringArrayIter::new(string_array)) {
+                            self.roundtrip_string(
+                                AnyLocalizableStringSource::Array(source, i),
+                                string,
+                            );
+                        }
                     }
                 }
                 _ => {

@@ -1,6 +1,6 @@
 use bumpalo::Bump;
 
-use crate::reactor::{rewrite::StringRewriter, AnyStringSource};
+use crate::reactor::{AnyLocalizableStringSource, rewrite::StringRewriter};
 
 /// Rewrite all strings to "X".
 pub struct XRewriter;
@@ -12,7 +12,7 @@ impl StringRewriter for XRewriter {
         _decoded: &'bump str,
         _instr_index: u32,
         _instr_offset: u32,
-        _source: AnyStringSource,
+        _source: AnyLocalizableStringSource,
     ) -> Option<&'bump str> {
         Some("X")
     }

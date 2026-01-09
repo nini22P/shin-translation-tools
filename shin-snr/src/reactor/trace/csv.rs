@@ -1,10 +1,10 @@
 use std::io;
 
 use bumpalo::collections::String;
-use serde::{ser::SerializeStruct, Serialize, Serializer};
+use serde::{Serialize, Serializer, ser::SerializeStruct};
 use smallvec::SmallVec;
 
-use crate::reactor::{trace::StringTraceListener, AnyStringSource};
+use crate::reactor::{AnyLocalizableStringSource, trace::StringTraceListener};
 
 pub struct CsvTraceListener<W: io::Write> {
     writer: csv::Writer<W>,
@@ -16,7 +16,7 @@ pub struct CsvTraceListener<W: io::Write> {
 struct Record<'bump> {
     index: u32,
     offset: u32,
-    source: AnyStringSource,
+    source: AnyLocalizableStringSource,
     s: &'bump str,
     translated: Option<String<'bump>>,
 }
@@ -55,7 +55,7 @@ impl<W: io::Write> CsvTraceListener<W> {
 }
 
 impl<W: io::Write> StringTraceListener for CsvTraceListener<W> {
-    fn on_string(&mut self, instr_offset: u32, source: AnyStringSource, s: &str) {
+    fn on_string(&mut self, instr_offset: u32, source: AnyLocalizableStringSource, s: &str) {
         self.writer
             .serialize(Record {
                 index: self.record_idx,
