@@ -1,3 +1,10 @@
+# Version 0.10.5
+
+- Adds support for rewriting Gotoubun no Princess ~Gensou to Shin'en to Mahou Gakuin~ (`01006DA020604000`, released on
+  2025-09-18).
+- Add a hack for tokenizing unnecessary `!`-escapes and stray `@`. This allows roundtrip tests for `world-re` and
+  `gohanayome` to pass, helping to ensure validity.
+
 # Version 0.10.4
 
 - Adds support for rewriting Irotoridori no Sekai World's End -Re:Birth- PS Vita scenarios (`PCSG00462`, released on
