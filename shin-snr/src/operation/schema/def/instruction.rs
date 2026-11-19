@@ -88,6 +88,7 @@ pub(super) fn get_schema_for_instruction(
                     | WhiteEternity
                     | HigurashiHou
                     | HigurashiHouV2
+                    | Soikano
                     | DC4
                     | Konosuba
                     | Umineko
@@ -104,6 +105,7 @@ pub(super) fn get_schema_for_instruction(
                     | WhiteEternity
                     | HigurashiHou
                     | HigurashiHouV2
+                    | Soikano
                     | DC4
                     | Konosuba
                     | Umineko

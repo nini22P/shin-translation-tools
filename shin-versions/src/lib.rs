@@ -32,6 +32,8 @@ pub enum ShinVersion {
     HigurashiHou,
     /// 2018-07-26 Switch `0100F6A00A684000` Ver. 2.X
     HigurashiHouV2,
+    /// 2019-02-21 Switch `0100D4800C476000`
+    Soikano,
     /// 2019-12-19 Switch `0100D8500EE14000`
     DC4,
     /// 2020-08-27 Switch `01004920105FC000`
@@ -63,6 +65,7 @@ mod verpat {
             WhiteEternity
                 | HigurashiHou
                 | HigurashiHouV2
+                | Soikano
                 | DC4
                 | Konosuba
                 | Umineko
@@ -71,7 +74,7 @@ mod verpat {
                 | Gohanayome
         };
         (@post-plane) => {
-            DC4 | Umineko | SugarStyle | Gerokasu2 
+            DC4 | Umineko | SugarStyle | Gerokasu2
         };
         (@higurashi) => {
             HigurashiSui | HigurashiHou | HigurashiHouV2
@@ -83,7 +86,15 @@ mod verpat {
             HigurashiSui | AliasCarnival | WhiteEternity | WorldRe
         };
         (@switch) => {
-            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | SugarStyle | Gerokasu2 | Gohanayome
+            HigurashiHou
+                | HigurashiHouV2
+                | Soikano
+                | DC4
+                | Konosuba
+                | Umineko
+                | SugarStyle
+                | Gerokasu2
+                | Gohanayome
         };
         ($pattern:pat) => {
             $pattern
@@ -199,9 +210,8 @@ impl ShinVersion {
 
         match self {
             HigurashiSui | AliasCarnival | WhiteEternity | WorldRe => U16,
-            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | SugarStyle | Gerokasu2 | Gohanayome => {
-                VarInt
-            }
+            HigurashiHou | HigurashiHouV2 | Soikano | DC4 | Konosuba | Umineko | SugarStyle
+            | Gerokasu2 | Gohanayome => VarInt,
         }
     }
 
@@ -211,8 +221,8 @@ impl ShinVersion {
 
         match self {
             HigurashiSui | AliasCarnival | WorldRe => LengthKind::U8Length,
-            WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | SugarStyle
-            | Gerokasu2 | Gohanayome => LengthKind::U16Length,
+            WhiteEternity | HigurashiHou | HigurashiHouV2 | Soikano | DC4 | Konosuba | Umineko
+            | SugarStyle | Gerokasu2 | Gohanayome => LengthKind::U16Length,
         }
     }
 
@@ -221,11 +231,11 @@ impl ShinVersion {
         use ShinVersion::*;
 
         match self {
-            HigurashiHou | HigurashiHouV2 => LengthKind::U8Length,
+            HigurashiHou | HigurashiHouV2 | Soikano => LengthKind::U8Length,
             // SUS: are all those old versions __really__ all using u16?
             // The trend has been in increasing the sizes, not randomly decreasing them for a single series
-            HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | DC4 | Konosuba | Umineko | SugarStyle
-            | Gerokasu2 | Gohanayome => LengthKind::U16Length,
+            HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | DC4 | Konosuba | Umineko
+            | SugarStyle | Gerokasu2 | Gohanayome => LengthKind::U16Length,
         }
     }
 
@@ -258,6 +268,10 @@ impl ShinVersion {
                 // this means that we won't be able to reconstruct 1:1 file after a roundtrip
                 fixup_character_names: false,
             }),
+            Soikano => StringPolicy::ShiftJis(SjisMessageFixupPolicy {
+                fixup_command_arguments: false,
+                fixup_character_names: false,
+            }),
             DC4 => StringPolicy::ShiftJis(SjisMessageFixupPolicy {
                 fixup_command_arguments: true,
                 fixup_character_names: false,
@@ -283,8 +297,8 @@ impl ShinVersion {
 
         match self {
             HigurashiSui | AliasCarnival | WorldRe => MessageCommandStyle::Unescaped,
-            WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | SugarStyle
-            | Gerokasu2 | Gohanayome => MessageCommandStyle::Escaped,
+            WhiteEternity | HigurashiHou | HigurashiHouV2 | Soikano | DC4 | Konosuba | Umineko
+            | SugarStyle | Gerokasu2 | Gohanayome => MessageCommandStyle::Escaped,
         }
     }
 
@@ -302,6 +316,7 @@ impl ShinVersion {
             WhiteEternity => Rom2V1_0,
             HigurashiHou => Rom2V1_0,
             HigurashiHouV2 => Rom2V1_0,
+            Soikano => Rom2V1_0,
             DC4 => Rom2V1_1,
             Umineko => Rom2V1_1,
             SugarStyle => Rom2V1_1,

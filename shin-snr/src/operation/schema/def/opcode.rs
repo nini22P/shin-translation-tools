@@ -527,6 +527,86 @@ pub const fn get_opcode_name(version: ShinVersion, opcode: u8) -> Option<Opcode>
                 _ => return None,
             })
         }),
+        ShinVersion::Soikano => Some(if opcode != 0 && opcode < 0x80 {
+            // ===
+            // Instructions
+            Opcode::Instruction(match opcode {
+                0x40 => uo,       // 0x71000a8000
+                0x41 => bo,       // 0x71000a82e0
+                0x42 => exp,      // 0x71000a85b0
+                0x43 => mm,       // 0x71000a8bb0
+                0x44 => gt,       // 0x71000a8c80
+                0x45 => st,       // 0x71000a8d60
+                0x46 => jc,       // 0x71000a8e40
+                0x47 => j,        // 0x71000a8f70
+                0x48 => gosub,    // 0x71000a8fb0
+                0x49 => retsub,   // 0x71000a9010
+                0x4a => jt,       // 0x71000a9040
+                0x4b => gosubt,   // 0x71000a90d0
+                0x4c => rnd,      // 0x71000a9170
+                0x4d => push,     // 0x71000a9250
+                0x4e => pop,      // 0x71000a92d0
+                0x4f => call,     // 0x71000a93b0
+                0x50 => r#return, // 0x71000a9480
+                0x51 => fmt,      // 0x71000a94c0
+                0x52 => fnmt,     // 0x71000a95f0
+                0x53 => getbupid, // 0x71000a9720
+                _ => return None,
+            })
+        } else {
+            // ===
+            // Commands
+            Opcode::Command(match opcode {
+                0x00 => EXIT,        // 0x71000a7f80
+                0x81 => SGET,        // 0x71000a98c0
+                0x82 => SSET,        // 0x71000a9930
+                0x83 => WAIT,        // 0x71000a9980
+                0x85 => MSGINIT,     // 0x71000a99f0
+                0x86 => MSGSET,      // 0x71000a9a30
+                0x87 => MSGWAIT,     // 0x71000a9b00
+                0x88 => MSGSIGNAL,   // 0x71000a9b40
+                0x89 => MSGSYNC,     // 0x71000a9b80
+                0x8a => MSGCLOSE,    // 0x71000a9bd0
+                0x8b => MSGFACE,     // 0x71000a9c40
+                0x8c => LOGSET,      // 0x71000a9c80
+                0x8d => SELECT,      // 0x71000a9d00
+                0x8e => WIPE,        // 0x71000a9e70
+                0x8f => WIPEWAIT,    // 0x71000a9fd0
+                0x90 => BGMPLAY,     // 0x71000aa010
+                0x91 => BGMSTOP,     // 0x71000aa080
+                0x92 => BGMVOL,      // 0x71000aa0c0
+                0x93 => BGMWAIT,     // 0x71000aa110
+                0x94 => BGMSYNC,     // 0x71000aa150
+                0x95 => SEPLAY,      // 0x71000aa190
+                0x96 => SESTOP,      // 0x71000aa220
+                0x97 => SESTOPALL,   // 0x71000aa270
+                0x98 => SEVOL,       // 0x71000aa2b0
+                0x99 => SEPAN,       // 0x71000aa310
+                0x9a => SEWAIT,      // 0x71000aa370
+                0x9b => SEONCE,      // 0x71000aa3c0
+                0x9c => VOICEPLAY,   // 0x71000aa440
+                0x9d => VOICESTOP,   // 0x71000aa4e0
+                0x9e => VOICEWAIT,   // 0x71000aa520
+                0xa0 => SAVEINFO,    // 0x71000aa560
+                0xa1 => AUTOSAVE,    // 0x71000aa5f0
+                0xa2 => EVBEGIN,     // 0x71000aa630
+                0xa3 => EVEND,       // 0x71000aa670
+                0xb0 => TROPHY,      // 0x71000aa6b0
+                0xb1 => UNLOCK,      // 0x71000aa6f0
+                0xc0 => LAYERINIT,   // 0x71000aa7b0
+                0xc1 => LAYERLOAD,   // 0x71000aa7f0
+                0xc2 => LAYERUNLOAD, // 0x71000aa950
+                0xc3 => LAYERCTRL,   // 0x71000aa9a0
+                0xc4 => LAYERWAIT,   // 0x71000aab00
+                0xc5 => LAYERBACK,   // 0x71000aabb0
+                0xc6 => LAYERSWAP,   // 0x71000aabf0
+                0xc7 => LAYERSELECT, // 0x71000aac40
+                0xc8 => MOVIEWAIT,   // 0x71000aac90
+                0xc9 => FEELICON,    // 0x71000aace0
+                0xff => DEBUGOUT,    // 0x71000aad60
+                _ => return None,
+            })
+        }),
         ShinVersion::DC4 => Some(if opcode != 0 && opcode < 0x80 {
             // ===
             // Instructions
