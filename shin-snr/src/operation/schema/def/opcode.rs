@@ -960,6 +960,99 @@ pub const fn get_opcode_name(version: ShinVersion, opcode: u8) -> Option<Opcode>
                 _ => return None,
             })
         }),
+        ShinVersion::Sakahari => Some(if opcode != 0 && opcode < 0x80 {
+            // ===
+            // Instructions
+            Opcode::Instruction(match opcode {
+                0x40 => uo,       // 0x71000d951c
+                0x41 => bo,       // 0x71000d9810
+                0x42 => exp,      // 0x71000d9b00
+                0x43 => mm,       // 0x71000da344
+                0x44 => gt,       // 0x71000da400
+                0x45 => st,       // 0x71000da4d0
+                0x46 => jc,       // 0x71000da590
+                0x47 => j,        // 0x71000da6f4
+                0x48 => gosub,    // 0x71000da724
+                0x49 => retsub,   // 0x71000da770
+                0x4a => jt,       // 0x71000da794
+                0x4b => gosubt,   // 0x71000da808
+                0x4c => rnd,      // 0x71000da890
+                0x4d => push,     // 0x71000da974
+                0x4e => pop,      // 0x71000da9dc
+                0x4f => call,     // 0x71000daaa0
+                0x50 => r#return, // 0x71000dab68
+                0x51 => fmt,      // 0x71000daba4
+                0x52 => fnmt,     // 0x71000dacb8
+                0x53 => getbupid, // 0x71000dadcc
+                _ => return None,
+            })
+        } else {
+            // ===
+            // Commands
+            Opcode::Command(match opcode {
+                0x00 => EXIT,        // 0x71000d94ac
+                0x81 => SGET,        // 0x71000daf88
+                0x82 => SSET,        // 0x71000dafe8
+                0x83 => WAIT,        // 0x71000db034
+                0x85 => MSGINIT,     // 0x71000db098
+                0x86 => MSGSET,      // 0x71000db0d8
+                0x87 => MSGWAIT,     // 0x71000db198
+                0x88 => MSGSIGNAL,   // 0x71000db1d8
+                0x89 => MSGSYNC,     // 0x71000db20c
+                0x8a => MSGCLOSE,    // 0x71000db258
+                0x8b => MSGFACE,     // 0x71000db2b4
+                0x8d => SELECT,      // 0x71000db2f4
+                0x8e => WIPE,        // 0x71000db44c
+                0x8f => WIPEWAIT,    // 0x71000db5a4
+                0x90 => BGMPLAY,     // 0x71000db5d8
+                0x91 => BGMSTOP,     // 0x71000db644
+                0x92 => BGMVOL,      // 0x71000db684
+                0x93 => BGMWAIT,     // 0x71000db6d0
+                0x94 => BGMSYNC,     // 0x71000db710
+                0x95 => SEPLAY,      // 0x71000db750
+                0x96 => SESTOP,      // 0x71000db7e0
+                0x97 => SESTOPALL,   // 0x71000db82c
+                0x98 => SEVOL,       // 0x71000db86c
+                0x99 => SEPAN,       // 0x71000db8cc
+                0x9a => SEWAIT,      // 0x71000db92c
+                0x9b => SEONCE,      // 0x71000db978
+                0x9c => VOICEPLAY,   // 0x71000db9f0
+                0x9d => VOICESTOP,   // 0x71000dba88
+                0x9e => VOICEWAIT,   // 0x71000dbabc
+                0x9f => SYSSE,       // 0x71000dbafc
+                0xa0 => SAVEINFO,    // 0x71000dbb48
+                0xa1 => AUTOSAVE,    // 0x71000dbbd0
+                0xa2 => EVBEGIN,     // 0x71000dbc04
+                0xa3 => EVEND,       // 0x71000dbc44
+                0xa4 => RESUMESET,   // 0x71000dbc78
+                0xa5 => RESUME,      // 0x71000dbcac
+                0xa6 => SYSCALL,     // 0x71000dbce0
+                0xb0 => TROPHY,      // 0x71000dbd2c
+                0xb1 => UNLOCK,      // 0x71000dbd6c
+                0xc0 => LAYERINIT,   // 0x71000dbe1c
+                0xc1 => LAYERLOAD,   // 0x71000dbe5c
+                0xc2 => LAYERUNLOAD, // 0x71000dbfb4
+                0xc3 => LAYERCTRL,   // 0x71000dbff4
+                0xc4 => LAYERWAIT,   // 0x71000dc140
+                0xc5 => LAYERCOPY,   // 0x71000dc1dc
+                0xc6 => LAYERSWAP,   // 0x71000dc23c
+                0xc7 => LAYERSELECT, // 0x71000dc288
+                0xc8 => LAYERLINK,   // 0x71000dc2d4
+                0xc9 => LGET,        // 0x71000dc320
+                0xca => LAYERFIND,   // 0x71000dc398
+                0xcb => MOVIEWAIT,   // 0x71000dc41c
+                0xcc => TRANSSET,    // 0x71000dc468
+                0xcd => TRANSWAIT,   // 0x71000dc5c0
+                0xd0 => PAGEBACK,    // 0x71000dc600
+                0xd1 => PLANESELECT, // 0x71000dc634
+                0xd2 => PLANECLEAR,  // 0x71000dc674
+                0xd3 => MASKLOAD,    // 0x71000dc6a8
+                0xd4 => MASKUNLOAD,  // 0x71000dc6f4
+                0xe0 => QUIZ,        // 0x71000dc734
+                0xff => DEBUGOUT,    // 0x71000dc794
+                _ => return None,
+            })
+        }),
         ShinVersion::Gerokasu2 => Some(if opcode != 0 && opcode < 0x80 {
             // ===
             // Instructions

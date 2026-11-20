@@ -42,6 +42,8 @@ pub enum ShinVersion {
     Umineko,
     /// 2021-06-24 Switch `0100325012B70000`
     SugarStyle,
+    /// 2021-10-28 Switch `0100A680151A0000`
+    Sakahari,
     /// 2025-03-14 Switch `0100451020714000`
     Gerokasu2,
     /// 2025-09-18 Switch `01006DA020604000`
@@ -70,11 +72,12 @@ mod verpat {
                 | Konosuba
                 | Umineko
                 | SugarStyle
+                | Sakahari
                 | Gerokasu2
                 | Gohanayome
         };
         (@post-plane) => {
-            DC4 | Umineko | SugarStyle | Gerokasu2
+            DC4 | Umineko | SugarStyle | Sakahari | Gerokasu2
         };
         (@higurashi) => {
             HigurashiSui | HigurashiHou | HigurashiHouV2
@@ -93,6 +96,7 @@ mod verpat {
                 | Konosuba
                 | Umineko
                 | SugarStyle
+                | Sakahari
                 | Gerokasu2
                 | Gohanayome
         };
@@ -211,7 +215,7 @@ impl ShinVersion {
         match self {
             HigurashiSui | AliasCarnival | WhiteEternity | WorldRe => U16,
             HigurashiHou | HigurashiHouV2 | Soikano | DC4 | Konosuba | Umineko | SugarStyle
-            | Gerokasu2 | Gohanayome => VarInt,
+            | Sakahari | Gerokasu2 | Gohanayome => VarInt,
         }
     }
 
@@ -222,7 +226,7 @@ impl ShinVersion {
         match self {
             HigurashiSui | AliasCarnival | WorldRe => LengthKind::U8Length,
             WhiteEternity | HigurashiHou | HigurashiHouV2 | Soikano | DC4 | Konosuba | Umineko
-            | SugarStyle | Gerokasu2 | Gohanayome => LengthKind::U16Length,
+            | SugarStyle | Sakahari | Gerokasu2 | Gohanayome => LengthKind::U16Length,
         }
     }
 
@@ -235,7 +239,7 @@ impl ShinVersion {
             // SUS: are all those old versions __really__ all using u16?
             // The trend has been in increasing the sizes, not randomly decreasing them for a single series
             HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | DC4 | Konosuba | Umineko
-            | SugarStyle | Gerokasu2 | Gohanayome => LengthKind::U16Length,
+            | SugarStyle | Sakahari | Gerokasu2 | Gohanayome => LengthKind::U16Length,
         }
     }
 
@@ -284,7 +288,7 @@ impl ShinVersion {
                 fixup_command_arguments: true,
                 fixup_character_names: false,
             }),
-            SugarStyle => StringPolicy::ShiftJis(SjisMessageFixupPolicy {
+            SugarStyle | Sakahari => StringPolicy::ShiftJis(SjisMessageFixupPolicy {
                 fixup_command_arguments: true,
                 fixup_character_names: true,
             }),
@@ -298,7 +302,7 @@ impl ShinVersion {
         match self {
             HigurashiSui | AliasCarnival | WorldRe => MessageCommandStyle::Unescaped,
             WhiteEternity | HigurashiHou | HigurashiHouV2 | Soikano | DC4 | Konosuba | Umineko
-            | SugarStyle | Gerokasu2 | Gohanayome => MessageCommandStyle::Escaped,
+            | SugarStyle | Sakahari | Gerokasu2 | Gohanayome => MessageCommandStyle::Escaped,
         }
     }
 
@@ -320,6 +324,7 @@ impl ShinVersion {
             DC4 => Rom2V1_1,
             Umineko => Rom2V1_1,
             SugarStyle => Rom2V1_1,
+            Sakahari => Rom2V1_1,
             Gerokasu2 => Rom2V1_1,
             // dungeon crawler games don't store its assets in the rom, it just uses switch's romfs
             verpat!(@dungeon-crawler) => return None,

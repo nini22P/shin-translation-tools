@@ -120,6 +120,9 @@ pub enum Command {
     LAYERCOPY,
     LAYERSWAP,
     LAYERSELECT,
+    LAYERLINK,
+    LGET,
+    LAYERFIND,
     MOVIEWAIT,
     // mid-version? Before we had planes, but no LAYERSWAP
     // I think konosuba and higurashi have this
@@ -171,7 +174,7 @@ pub enum Command {
     SNRSEL,     // also shared by Higurashi Hou
     KAKERA,     // also shared by Higurashi Hou
     KAKERAGET,  // also shared by Higurashi Hou
-    QUIZ,       // also shared by Higurashi Hou, Umineko, SugarStyle and Gerokasu2
+    QUIZ,       // also shared by Higurashi Hou, Umineko, SugarStyle, Sakahari and Gerokasu2
     FAKESELECT, // also shared by Higurashi Hou
 
     // Umineko
