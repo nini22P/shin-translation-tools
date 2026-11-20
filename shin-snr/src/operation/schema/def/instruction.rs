@@ -91,6 +91,7 @@ pub(super) fn get_schema_for_instruction(
                     | DC4
                     | Konosuba
                     | Umineko
+                    | SugarStyle
                     | Gerokasu2
                     | Gohanayome
             );
@@ -106,6 +107,7 @@ pub(super) fn get_schema_for_instruction(
                     | DC4
                     | Konosuba
                     | Umineko
+                    | SugarStyle
                     | Gerokasu2
                     | Gohanayome
             );

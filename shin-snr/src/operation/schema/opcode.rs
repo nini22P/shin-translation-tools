@@ -117,6 +117,7 @@ pub enum Command {
     LAYERUNLOAD,
     LAYERCTRL,
     LAYERWAIT,
+    LAYERCOPY,
     LAYERSWAP,
     LAYERSELECT,
     MOVIEWAIT,
@@ -170,7 +171,7 @@ pub enum Command {
     SNRSEL,     // also shared by Higurashi Hou
     KAKERA,     // also shared by Higurashi Hou
     KAKERAGET,  // also shared by Higurashi Hou
-    QUIZ,       // also shared by Higurashi Hou, Umineko and Gerokasu2
+    QUIZ,       // also shared by Higurashi Hou, Umineko, SugarStyle and Gerokasu2
     FAKESELECT, // also shared by Higurashi Hou
 
     // Umineko
@@ -185,6 +186,9 @@ pub enum Command {
     // Higurashi Hou V2
     KGET,
     KSET,
+
+    // SugarStyle
+    NAMECHECK,
 
     // Gohanayome
     BGMSAVE,

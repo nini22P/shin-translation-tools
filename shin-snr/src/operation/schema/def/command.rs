@@ -31,7 +31,8 @@ pub(super) fn get_schema_for_command(
             HigurashiSui | AliasCarnival | WorldRe => {
                 ctx.number();
             }
-            WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Umineko | Gerokasu2 => {
+            WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Umineko | SugarStyle
+            | Gerokasu2 => {
                 ctx.u8();
                 ctx.number();
             }
@@ -50,7 +51,7 @@ pub(super) fn get_schema_for_command(
         WAIT => match ctx.version() {
             HigurashiSui | AliasCarnival | WorldRe => ctx.number(),
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 | Gohanayome => {
+            | SugarStyle | Gerokasu2 | Gohanayome => {
                 ctx.u8();
                 ctx.number();
             }
@@ -58,7 +59,7 @@ pub(super) fn get_schema_for_command(
         KEYWAIT => match ctx.version() {
             HigurashiSui | AliasCarnival | WorldRe => ctx.number(),
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 | Gohanayome => {
+            | SugarStyle | Gerokasu2 | Gohanayome => {
                 return OperationResult::Unreachable;
             }
         },
@@ -67,7 +68,7 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.number();
             }
-            HigurashiHou | DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
+            HigurashiHou | DC4 | Konosuba | Umineko | SugarStyle | Gerokasu2 | Gohanayome => {
                 ctx.number();
             }
             HigurashiHouV2 => {
@@ -108,6 +109,9 @@ pub(super) fn get_schema_for_command(
                 Umineko => {
                     // nothing here
                 }
+                SugarStyle => {
+                    // nothing here
+                }
                 Gerokasu2 => {
                     ctx.number();
                 }
@@ -123,14 +127,14 @@ pub(super) fn get_schema_for_command(
         }
         MSGSIGNAL => {}
         MSGSYNC => {
-            guard!(HigurashiHou | HigurashiHouV2 | DC4 | Umineko | Gerokasu2);
+            guard!(HigurashiHou | HigurashiHouV2 | DC4 | Umineko | SugarStyle | Gerokasu2);
             ctx.number();
             ctx.number();
         }
         MSGCLOSE => match ctx.version() {
             HigurashiSui | AliasCarnival | WorldRe => {}
             WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko
-            | Gerokasu2 | Gohanayome => {
+            | SugarStyle | Gerokasu2 | Gohanayome => {
                 ctx.u8();
             }
         },
@@ -156,7 +160,7 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.number();
             }
-            WhiteEternity | HigurashiHou | DC4 | Gerokasu2 => {
+            WhiteEternity | HigurashiHou | DC4 | SugarStyle | Gerokasu2 => {
                 ctx.number();
             }
         },
@@ -174,7 +178,7 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.string(StringStyle::U16);
             }
-            DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
+            DC4 | Konosuba | Umineko | SugarStyle | Gerokasu2 | Gohanayome => {
                 return OperationResult::Unreachable;
             }
         },
@@ -187,7 +191,7 @@ pub(super) fn get_schema_for_command(
             let style = match ctx.version() {
                 HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | HigurashiHou
                 | HigurashiHouV2 | Konosuba | Gohanayome => StringStyle::U8,
-                DC4 | Umineko | Gerokasu2 => StringStyle::U16,
+                DC4 | Umineko | SugarStyle | Gerokasu2 => StringStyle::U16,
             };
 
             ctx.string(style);
@@ -199,7 +203,7 @@ pub(super) fn get_schema_for_command(
                 ctx.custom(OperationElement::HiguSuiWipeArg);
             }
             AliasCarnival | HigurashiHou | HigurashiHouV2 | WhiteEternity | DC4 | Konosuba
-            | Umineko | Gerokasu2 | Gohanayome => {
+            | Umineko | SugarStyle | Gerokasu2 | Gohanayome => {
                 ctx.number();
                 ctx.number();
                 ctx.number();
@@ -244,7 +248,8 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.number();
             }
-            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
+            HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | SugarStyle | Gerokasu2
+            | Gohanayome => {
                 // 7x number
                 ctx.number();
                 ctx.number();
@@ -291,7 +296,8 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
                 ctx.number();
             }
-            DC4 | HigurashiHou | HigurashiHouV2 | Konosuba | Umineko | Gerokasu2 | Gohanayome => {
+            DC4 | HigurashiHou | HigurashiHouV2 | Konosuba | Umineko | SugarStyle | Gerokasu2
+            | Gohanayome => {
                 // 5x number
                 ctx.number();
                 ctx.number();
@@ -309,7 +315,7 @@ pub(super) fn get_schema_for_command(
             let style = match ctx.version() {
                 HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | HigurashiHou
                 | HigurashiHouV2 | Konosuba | Gohanayome => StringStyle::U8,
-                DC4 | Umineko | Gerokasu2 => StringStyle::U16,
+                DC4 | Umineko | SugarStyle | Gerokasu2 => StringStyle::U16,
             };
 
             ctx.string(style);
@@ -318,14 +324,21 @@ pub(super) fn get_schema_for_command(
         }
         VOICESTOP => {
             guard!(
-                HigurashiHou | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 | Gohanayome
+                HigurashiHou
+                    | HigurashiHouV2
+                    | DC4
+                    | Konosuba
+                    | Umineko
+                    | SugarStyle
+                    | Gerokasu2
+                    | Gohanayome
             );
         }
         VOICEWAIT => {
             ctx.number();
         }
         SYSSE => {
-            guard!(Umineko | Gerokasu2);
+            guard!(Umineko | SugarStyle | Gerokasu2);
             ctx.number();
             ctx.number();
         }
@@ -337,7 +350,7 @@ pub(super) fn get_schema_for_command(
             let style = match ctx.version() {
                 HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | HigurashiHou
                 | HigurashiHouV2 => StringStyle::U8,
-                DC4 | Umineko | Gerokasu2 => StringStyle::U16,
+                DC4 | Umineko | SugarStyle | Gerokasu2 => StringStyle::U16,
                 verpat!(@dungeon-crawler) => unreachable!(),
             };
 
@@ -354,7 +367,7 @@ pub(super) fn get_schema_for_command(
         EVBEGIN => {
             match ctx.version() {
                 HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | HigurashiHou
-                | HigurashiHouV2 | DC4 | Umineko | Gerokasu2 => {
+                | HigurashiHouV2 | DC4 | Umineko | SugarStyle | Gerokasu2 => {
                     ctx.number();
                 }
                 Konosuba => {
@@ -375,7 +388,7 @@ pub(super) fn get_schema_for_command(
             guard!(verpat!(@post-plane));
         }
         SYSCALL => {
-            guard!(Umineko | Gerokasu2);
+            guard!(Umineko | SugarStyle | Gerokasu2);
             ctx.number();
             ctx.number();
         }
@@ -390,7 +403,7 @@ pub(super) fn get_schema_for_command(
             DC4 | Gerokasu2 => {
                 ctx.number();
             }
-            HigurashiHou | HigurashiHouV2 | Umineko => {
+            HigurashiHou | HigurashiHouV2 | Umineko | SugarStyle => {
                 ctx.u8();
                 ctx.number_array(LengthKind::U8Length);
             }
@@ -413,7 +426,7 @@ pub(super) fn get_schema_for_command(
             ctx.number();
             match ctx.version() {
                 HigurashiSui | AliasCarnival | WorldRe | WhiteEternity | HigurashiHou
-                | HigurashiHouV2 | DC4 | Konosuba | Umineko | Gerokasu2 => {
+                | HigurashiHouV2 | DC4 | Konosuba | Umineko | SugarStyle | Gerokasu2 => {
                     ctx.bitmask_u8_number_array()
                 }
                 Gohanayome => ctx.bitmask_u16_number_array(),
@@ -435,13 +448,19 @@ pub(super) fn get_schema_for_command(
                 ctx.number();
             }
             AliasCarnival | WhiteEternity | HigurashiHou | HigurashiHouV2 | DC4 | Konosuba
-            | Umineko | Gerokasu2 | Gohanayome => {
+            | Umineko | SugarStyle | Gerokasu2 | Gohanayome => {
                 ctx.number();
                 ctx.number_array(LengthKind::U8Length);
             }
         },
+        LAYERCOPY => {
+            guard!(SugarStyle);
+            ctx.number();
+            ctx.number();
+            ctx.number();
+        }
         LAYERSWAP => {
-            guard!(HigurashiHou | HigurashiHouV2 | DC4 | Umineko | Gerokasu2);
+            guard!(HigurashiHou | HigurashiHouV2 | DC4 | Umineko | SugarStyle | Gerokasu2);
             ctx.number();
             ctx.number();
         }
@@ -658,7 +677,7 @@ pub(super) fn get_schema_for_command(
                     ctx.number();
                     ctx.number();
                 }
-                Umineko | Gerokasu2 => {
+                Umineko | SugarStyle | Gerokasu2 => {
                     ctx.number();
                 }
                 AliasCarnival | WhiteEternity | WorldRe | DC4 | Konosuba | Gohanayome => {
@@ -710,6 +729,12 @@ pub(super) fn get_schema_for_command(
             guard!(HigurashiHouV2);
             ctx.number();
             ctx.number();
+        }
+
+        // SugarStyle
+        NAMECHECK => {
+            guard!(SugarStyle);
+            ctx.reg();
         }
 
         // Gohanayome
@@ -768,7 +793,7 @@ pub(super) fn get_schema_for_command(
                 // FIXME: this array should be bound to size of 9
                 ctx.number_array(LengthKind::U8Length);
             }
-            DC4 | Umineko | Gerokasu2 => {
+            DC4 | Umineko | SugarStyle | Gerokasu2 => {
                 ctx.string(StringStyle::U16);
                 // FIXME: this array should be bound to size of 9
                 ctx.number_array(LengthKind::U8Length);
